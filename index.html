@@ -216,6 +216,12 @@ header{
 .scan-prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(232,220,196,.12);}
 .scan-prog-f{height:100%;background:var(--accent);transition:width .25s;width:0;}
 .scan-ctrl{padding:18px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
+.mode-switch{display:flex;gap:5px;margin-bottom:13px;}
+.mode-opt{flex:1;text-align:center;font-size:11px;font-weight:600;padding:7px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text-mid);cursor:pointer;}
+.mode-opt.on{border-color:var(--accent);color:var(--accent);}
+.photo-info{display:flex;flex-direction:column;align-items:center;gap:3px;margin-bottom:11px;}
+.photo-info #photoCount{font-size:15px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono';}
+.photo-hint{font-size:10px;color:var(--text-dim);}
 .scan-dots{display:flex;gap:6px;justify-content:center;margin-bottom:13px;flex-wrap:wrap;}
 .scan-dots i{width:9px;height:9px;border-radius:50%;background:var(--border2);transition:background .25s;}
 .scan-dots i.done{background:var(--sage);}
@@ -301,6 +307,39 @@ header{
 .console-clear{font-size:10px;color:var(--text-dim);background:none;border:none;cursor:pointer;font-family:inherit;padding:2px 6px;}
 .console-clear:active{color:var(--red);}
 
+
+/* PROCESADO */
+.proc-box{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.proc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.proc-title{font-size:12px;font-weight:600;color:var(--cream);}
+.proc-cfg{width:28px;height:28px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.proc-cfg.on{border-color:var(--accent);color:var(--accent);}
+.proc-cfg svg{width:14px;height:14px;}
+.proc-cfg-panel{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:10px;}
+.proc-presets{display:flex;gap:4px;margin-bottom:11px;}
+.pset{flex:1;text-align:center;font-size:10px;font-weight:600;padding:6px 2px;border-radius:7px;background:var(--bg);border:1px solid var(--border);color:var(--text-mid);cursor:pointer;}
+.pset.on{border-color:var(--accent);color:var(--accent);}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex-shrink:0;}
+.sw input{opacity:0;width:0;height:0;}
+.sw i{position:absolute;inset:0;background:var(--surface3);border-radius:19px;transition:.2s;}
+.sw i:before{content:"";position:absolute;width:13px;height:13px;left:3px;top:3px;background:var(--text-mid);border-radius:50%;transition:.2s;}
+.sw input:checked + i{background:rgba(224,140,74,.3);}
+.sw input:checked + i:before{transform:translateX(15px);background:var(--accent);}
+.proc-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.proc-row:last-child{margin-bottom:0;}
+.proc-row span{font-size:10px;color:var(--text-mid);width:82px;flex-shrink:0;}
+.proc-row input{flex:1;accent-color:var(--accent);height:5px;}
+.proc-row b{font-size:10px;color:var(--accent);font-family:'JetBrains Mono';width:34px;text-align:right;}
+.proc-sel{font-size:10px;color:var(--accent);font-family:'JetBrains Mono';text-align:center;margin-bottom:8px;min-height:13px;}
+.proc-status{font-size:11px;color:var(--text-mid);text-align:center;margin-bottom:10px;min-height:16px;}
+.proc-status.work{color:var(--accent);}
+.proc-status.ok{color:var(--sage);}
+.proc-status.err{color:var(--red);}
+.proc-log{background:#0a0907;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;max-height:110px;overflow-y:auto;font-family:'JetBrains Mono';font-size:9px;line-height:1.6;color:var(--text-dim);}
+.proc-go{width:100%;padding:11px;border-radius:10px;border:1px solid var(--accent);background:rgba(224,140,74,.12);color:var(--accent);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.proc-go:active{transform:scale(.98);}
+.proc-go:disabled{opacity:.45;}
+
 /* ─── TAB BAR ─── */
 .tabbar{display:flex;height:var(--tabbar-h);background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--text-dim);transition:color .14s;}
@@ -346,6 +385,7 @@ header{
 .li{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;cursor:pointer;}
 .li:active{background:var(--surface2);}
 .li.on{background:var(--surface2);border-left:2px solid var(--accent);}
+.scan-thumb{width:54px;height:40px;object-fit:cover;border-radius:6px;background:var(--surface3);flex-shrink:0;}
 .li-ic{flex-shrink:0;color:var(--text-mid);display:flex;}
 .li-info{flex:1;min-width:0;}
 .li-t{font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;}
@@ -603,12 +643,45 @@ header{
       </div>
     </div>
     <div class="scan-ctrl">
+      <div class="mode-switch">
+        <div class="mode-opt on" data-mode="video">Vídeo</div>
+        <div class="mode-opt" data-mode="photo">Fotos</div>
+      </div>
       <div class="scan-dots" id="scanDots"></div>
       <div class="scan-st" id="scanSt">Pulsa grabar para el escaneado guiado</div>
+      <div class="photo-info" id="photoInfo" style="display:none;">
+        <span id="photoCount">0 fotos</span>
+        <span class="photo-hint" id="photoHint">Gira despacio alrededor del objeto</span>
+      </div>
       <div class="scan-row">
         <button class="scan-side" id="scanSend">Enviar al PC</button>
         <div class="rec" id="recBtn"><div class="ric"></div></div>
-        <button class="scan-side" id="scanRetry" style="display:none;">↺ Repetir</button>
+        <button class="scan-side" id="scanRetry" style="display:none;">Repetir</button>
+      </div>
+      <div class="proc-box" id="procBox">
+        <div class="proc-head">
+          <span class="proc-title" id="procTitle">Procesar en el PC</span>
+          <div style="display:flex;gap:6px;">
+          <button class="proc-cfg" id="scansBtn" title="Librería de scans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.5V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.5"/><path d="M2 8.5 4.5 4h15L22 8.5H2z"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+          <button class="proc-cfg" id="procCfgBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
+          </div>
+        </div>
+        <div class="proc-cfg-panel" id="procCfg" style="display:none;">
+          <div class="proc-presets">
+            <div class="pset" data-preset="rapido">Rápido</div>
+            <div class="pset on" data-preset="normal">Normal</div>
+            <div class="pset" data-preset="bueno">Bueno</div>
+            <div class="pset" data-preset="">Manual</div>
+          </div>
+          <div class="proc-row"><span>Fotogramas/s</span><input type="range" id="procFps" min="1" max="6" step="1" value="3"><b id="procFpsV">3</b></div>
+          <div class="proc-row"><span>Criba borrosos</span><input type="range" id="procNit" min="0" max="90" step="5" value="55"><b id="procNitV">55%</b></div>
+          <div class="proc-row"><span>Triángulos</span><input type="range" id="procTris" min="10" max="200" step="10" value="50"><b id="procTrisV">50k</b></div>
+          <div class="proc-row" style="margin-top:9px;"><span>Aislar objeto</span><label class="sw"><input type="checkbox" id="procMask"><i></i></label><b id="procMaskV">no</b></div>
+        </div>
+        <div class="proc-sel" id="procSel"></div>
+        <div class="proc-status" id="procStatus">Envía un scan y púlsalo para reconstruir en 3D</div>
+        <div class="proc-log" id="procLog" style="display:none;"></div>
+        <button class="proc-go" id="procGo">Procesar último scan</button>
       </div>
     </div>
   </div>
@@ -651,6 +724,11 @@ header{
   <div class="sheet-h"><span class="sheet-t">Mis niveles</span><button class="sheet-x" id="lvlX">×</button></div>
   <div class="list" id="lvlList"></div>
   <div style="display:flex;gap:8px;"><button class="act" id="lvlDup">Duplicar actual</button><button class="act p" id="lvlNew" style="flex:1.4;">+ Nuevo nivel</button></div>
+</div></div>
+
+<div class="ov hide" id="scansOv"><div class="sheet lg">
+  <div class="sheet-h"><span class="sheet-t">Scans en el PC</span><button class="sheet-x" id="scansX">×</button></div>
+  <div class="list" id="scansList"></div>
 </div></div>
 
 <div class="ov hide" id="scaleOv"><div class="sheet sm">
@@ -744,7 +822,7 @@ function switchTab(t){
   $(t+'View').classList.add('active');
   ['jsonBtn','saveBtn','undoBtn'].forEach(b=>{const el=$(b);if(el)el.style.display=t==='level'?'':'none';});
   if(t==='level')resize();
-  if(t==='scan')startCam();else stopCam();
+  if(t==='scan'){startCam();checkProcOnOpen();}else stopCam();
   if(t==='scripts')renderScripts();
   if(t==='mesh'){initMeshViewer();setTimeout(resizeMeshViewer,50);}
 }
@@ -1232,6 +1310,119 @@ function drawMsg(role,text,changes,scroll=true){const el=$('msgs');const row=doc
 async function send(){const text=intext.value.trim();if(!text)return;intext.value='';autoH();if(!S.chatId)await newChat();drawMsg('user',text,null);await saveMsg('user',text,null);$('sendBtn').disabled=1;$('typing').style.display='flex';$('msgs').scrollTop=$('msgs').scrollHeight;const key=localStorage.getItem('anthropicKey')||'';if(!key){$('typing').style.display='none';$('sendBtn').disabled=0;drawMsg('assistant','Añade tu Anthropic API key en Configuración (engranaje arriba a la derecha).');return;}let sys=`Eres un asistente de programación Unity C# para un juego 3D estilo Toad Treasure Tracker con temática de café. El jugador recoge granos, cuantos más recoge más gordo y lento. Pasos estrechos por los que no cabe gordo.\nCuando modificas o creas scripts usa EXACTAMENTE:\n<<<FILE: Nombre.cs>>>\n[contenido completo]\n<<<END>>>\nMúltiples bloques si hace falta. Explica brevemente después. Español. Conciso. Unity 6, URP, CharacterController.`;if(S.files.length){sys+='\n\nSCRIPTS:\n';S.files.forEach(f=>sys+=`\n--- ${f.name} ---\n${f.content||'(vacío)'}\n`);}if(S.objects.length){const w=S.mapImg?S.mapImg.width:800,h=S.mapImg?S.mapImg.height:600;sys+='\n\nNIVEL:\n'+JSON.stringify(S.objects.map(o=>({id:o.type+'_'+o.id,type:o.type,pos:{x:+(o.wx/w).toFixed(3),y:+(o.wy/h).toFixed(3)},note:o.note})));}const hist=S.chatMsgs.filter(m=>m.role&&m.content).map(m=>({role:m.role,content:m.content}));hist.push({role:'user',content:text});try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:sys,messages:hist})});const d=await r.json();const reply=d.content?.[0]?.text||'Error en la respuesta';$('typing').style.display='none';const ch=parseFiles(reply);drawMsg('assistant',reply,ch);await saveMsg('assistant',reply,ch);}catch(e){$('typing').style.display='none';drawMsg('assistant','Error al conectar con Claude.');}$('sendBtn').disabled=0;}
 
 
+
+
+// ─── LIBRERÍA DE SCANS ──────────────────────────────────────────────────────
+let scans=[],scanSel=null;
+function fechaCorta(ts){
+  const d=new Date(ts*1000),hoy=new Date();
+  const mismo=d.toDateString()===hoy.toDateString();
+  const hh=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  if(mismo)return 'hoy '+hh;
+  return d.getDate()+'/'+(d.getMonth()+1)+' '+hh;
+}
+async function loadScans(){
+  const el=$('scansList');
+  if(!S.ip){el.innerHTML='<div class="empty">Conecta al PC en Ajustes</div>';return;}
+  el.innerHTML='<div class="empty">Cargando...</div>';
+  try{
+    const r=await fetch(`${srvURL()}/scans`,{signal:AbortSignal.timeout(8000)});
+    if(!r.ok)throw 0;
+    scans=(await r.json()).scans||[];
+  }catch(e){el.innerHTML='<div class="empty">Sin conexión al PC</div>';return;}
+  if(!scans.length){el.innerHTML='<div class="empty">Todavía no has enviado ningún scan</div>';return;}
+  el.innerHTML=scans.map((s,i)=>{const tipo=s.kind==='photo'?`${s.count} fotos`:'vídeo';return `<div class="li ${s.name===scanSel?'on':''}" data-i="${i}"><img class="scan-thumb" src="${srvURL()}/scan/thumb?name=${encodeURIComponent(s.name)}" onerror="this.style.visibility='hidden'"><div class="li-info"><div class="li-t">${esc(s.name)}</div><div class="li-s">${tipo} · ${s.size} · ${fechaCorta(s.mtime)}</div></div></div>`;}).join('');
+  el.querySelectorAll('.li').forEach(d=>d.addEventListener('click',()=>{
+    scanSel=scans[+d.dataset.i].name;
+    updateScanSel();
+    $('scansOv').classList.add('hide');
+  }));
+}
+function updateScanSel(){
+  $('procSel').textContent=scanSel?scanSel:'';
+  $('procGo').textContent=scanSel?'Procesar este scan':'Procesar último scan';
+}
+$('scansBtn').addEventListener('click',()=>{loadScans();$('scansOv').classList.remove('hide');});
+$('scansX').addEventListener('click',()=>$('scansOv').classList.add('hide'));
+
+// ─── PROCESADO EN EL PC ─────────────────────────────────────────────────────
+let procPoll=null;
+$('procCfgBtn').addEventListener('click',()=>{
+  const p=$('procCfg'),open=p.style.display==='none';
+  p.style.display=open?'block':'none';
+  $('procCfgBtn').classList.toggle('on',open);
+});
+let procPreset='normal';
+const PRESET_VALS={rapido:[1,20,45],normal:[3,50,55],bueno:[5,120,60]};
+document.querySelectorAll('.pset').forEach(p=>p.addEventListener('click',()=>{
+  procPreset=p.dataset.preset;
+  document.querySelectorAll('.pset').forEach(x=>x.classList.toggle('on',x===p));
+  const v=PRESET_VALS[procPreset];
+  if(v){$('procFps').value=v[0];$('procFpsV').textContent=v[0];
+        $('procTris').value=v[1];$('procTrisV').textContent=v[1]+'k';
+        $('procNit').value=v[2];$('procNitV').textContent=v[2]+'%';}
+}));
+function manualSiTocado(){procPreset='';document.querySelectorAll('.pset').forEach(x=>x.classList.toggle('on',x.dataset.preset===''));}
+$('procMask').addEventListener('change',e=>$('procMaskV').textContent=e.target.checked?'sí':'no');
+$('procFps').addEventListener('input',manualSiTocado);
+$('procTris').addEventListener('input',manualSiTocado);
+$('procNit').addEventListener('input',manualSiTocado);
+$('procFps').addEventListener('input',e=>$('procFpsV').textContent=e.target.value);
+$('procNit').addEventListener('input',e=>$('procNitV').textContent=e.target.value+'%');
+$('procTris').addEventListener('input',e=>$('procTrisV').textContent=e.target.value+'k');
+
+function procSet(txt,cls){const el=$('procStatus');el.textContent=txt;el.className='proc-status'+(cls?' '+cls:'');}
+
+$('procGo').addEventListener('click',async()=>{
+  if(!S.ip){toast('Conecta al PC en Ajustes');return;}
+  $('procGo').disabled=true;
+  procSet('Lanzando...','work');
+  try{
+    const r=await fetch(`${srvURL()}/process`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({video:scanSel||'',preset:procPreset||'',mascara:$('procMask').checked,fps:+$('procFps').value,tris:+$('procTris').value*1000,nitidez:+$('procNit').value/100}),
+      signal:AbortSignal.timeout(15000)});
+    const d=await r.json();
+    if(!r.ok){procSet(d.error||'No se pudo lanzar','err');$('procGo').disabled=false;return;}
+    procSet('Procesando '+d.video,'work');
+    $('procLog').style.display='block';
+    startProcPoll();
+  }catch(e){procSet('Sin conexión al PC','err');$('procGo').disabled=false;}
+});
+
+function startProcPoll(){if(procPoll)return;pollProc();procPoll=setInterval(pollProc,3000);}
+function stopProcPoll(){clearInterval(procPoll);procPoll=null;}
+
+async function pollProc(){
+  if(!S.ip)return;
+  try{
+    const r=await fetch(`${srvURL()}/process/status`,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(d.log&&d.log.length){
+      const el=$('procLog');
+      el.style.display='block';
+      el.innerHTML=d.log.map(l=>`<div>${esc(l)}</div>`).join('');
+      el.scrollTop=el.scrollHeight;
+    }
+    if(d.activo){
+      $('procGo').disabled=true;
+      procSet(`${d.fase} · ${d.min} min`,'work');
+    }else{
+      stopProcPoll();
+      $('procGo').disabled=false;
+      if(d.error){procSet('Error: '+d.error.slice(0,90),'err');}
+      else if(d.resultado){
+        procSet('Listo: '+d.resultado,'ok');
+        toast('Mesh listo — ábrelo en la pestaña Mesh');
+      }else if(d.fase){procSet(d.fase,'');}
+    }
+  }catch(e){}
+}
+
+// Si había un procesado en marcha al abrir la pestaña, engancharse
+function checkProcOnOpen(){if(S.ip&&S.conn)pollProc();}
+
 // ─── MESH VIEWER (three.js) ───
 const MV={scene:null,camera:null,renderer:null,mesh:null,origGeo:null,raf:null,rotY:0,rotX:.4,dist:3,crop:0,scale:1,rotZ:0};
 function initMeshViewer(){
@@ -1469,9 +1660,33 @@ function startRec(){if(!stream){$('scanSt').textContent='Cámara no disponible';
   catch(e){recorder=new MediaRecorder(stream);}recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};recorder.onstop=()=>{blob=new Blob(chunks,{type:recorder.mimeType});$('scanSt').textContent=`Completo · ${(blob.size/1048576).toFixed(1)}MB`;$('scanSend').classList.add('show');$('scanRetry').style.display='block';$('scanProgF').style.width='100%';};recorder.start(1000);guide();}
 function guide(){if(angI>=ANG.length){stopRec();return;}const a=ANG[angI];$('scanAngN').textContent=a.n;$('scanSt').textContent=a.h;document.querySelectorAll('.scan-dots i').forEach((d,j)=>d.className=j<angI?'done':j===angI?'now':'');const tot=ANG.reduce((s,x)=>s+x.d,0),dn=ANG.slice(0,angI).reduce((s,x)=>s+x.d,0);let el=0;scanT=setInterval(()=>{el+=.1;$('scanProgF').style.width=((dn+el)/tot*100)+'%';if(el>=a.d){clearInterval(scanT);angI++;guide();}},100);}
 function stopRec(){clearInterval(scanT);scanRec=0;$('recBtn').classList.remove('on');$('scanAngN').textContent='Procesando...';if(recorder&&recorder.state!=='inactive')recorder.stop();}
-$('recBtn').addEventListener('click',()=>{if(scanRec)stopRec();else startRec();});
-$('scanRetry').addEventListener('click',()=>{$('scanProgF').style.width='0';$('scanSend').classList.remove('show');$('scanRetry').style.display='none';$('scanSt').textContent='Pulsa grabar para el escaneado guiado';$('scanAngN').textContent='Listo para empezar';buildDots();blob=null;});
-$('scanSend').addEventListener('click',async()=>{if(!blob){toast('No hay grabación');return;}if(!S.ip){toast('Conecta al PC primero');return;}$('scanSend').textContent='Enviando...';try{const fd=new FormData();const ext=(recorder&&recorder.mimeType&&recorder.mimeType.includes('webm'))?'webm':'mp4';fd.append('video',blob,'scan.'+ext);const r=await fetch(`${srvURL()}/scan`,{method:'POST',body:fd,signal:AbortSignal.timeout(120000)});if(r.ok){const d=await r.json();$('scanSend').textContent='Enviado';toast('Vídeo enviado — procesando');if(d.mapUrl){const i=new Image();i.onload=()=>{S.mapImg=i;fit();render();toast('¡Mapa cargado!');};i.src=d.mapUrl;}}else{$('scanSend').textContent='Enviar al PC';toast('Error al enviar');}}catch(e){$('scanSend').textContent='Enviar al PC';toast('Error de conexión');}});
+$('recBtn').addEventListener('click',()=>{if(scanMode==='photo'){photoTimer?stopPhotos():startPhotos();}else{scanRec?stopRec():startRec();}});
+$('scanRetry').addEventListener('click',()=>{resetCapture();$('scanProgF').style.width='0';$('scanSend').classList.remove('show');$('scanRetry').style.display='none';$('scanSt').textContent='Pulsa grabar para el escaneado guiado';$('scanAngN').textContent='Listo para empezar';buildDots();blob=null;});
+$('scanSend').addEventListener('click',async()=>{
+  if(!S.ip){toast('Conecta al PC en Ajustes');return;}
+  const esFoto=scanMode==='photo';
+  if(esFoto&&!photos.length){toast('No hay fotos');return;}
+  if(!esFoto&&!blob){toast('No hay grabación');return;}
+  $('scanSend').textContent='Enviando...';
+  try{
+    const fd=new FormData();
+    if(esFoto){
+      photos.forEach((b,i)=>fd.append('photo_'+String(i).padStart(4,'0'),b,'foto_'+String(i+1).padStart(4,'0')+'.jpg'));
+      fd.append('mode','photo');
+    }else{
+      const ext=(recorder&&recorder.mimeType&&recorder.mimeType.includes('webm'))?'webm':'mp4';
+      fd.append('video',blob,'scan.'+ext);
+      fd.append('mode','video');
+    }
+    const r=await fetch(`${srvURL()}/scan`,{method:'POST',body:fd,signal:AbortSignal.timeout(300000)});
+    if(r.ok){
+      $('scanSend').textContent='Enviado';
+      toast(esFoto?photos.length+' fotos en el PC':'Vídeo en el PC');
+      procSet('Recibido. Pulsa Procesar para reconstruir','ok');
+      scanSel=null;updateScanSel();loadScans();
+    }else{$('scanSend').textContent='Enviar al PC';toast('Error al enviar');}
+  }catch(e){$('scanSend').textContent='Enviar al PC';toast('Error de conexión');}
+});
 
 // INIT
 initGrass();resize();fit();render();loadCustom();loadConns();
