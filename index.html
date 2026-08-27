@@ -329,6 +329,16 @@ header{
 .fin{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'JetBrains Mono';padding:11px 13px;border-radius:9px;outline:none;width:100%;}
 .fin:focus{border-color:var(--accent);}
 .fin::placeholder{color:var(--text-dim);}
+.conn-list{display:flex;flex-direction:column;gap:5px;}
+.conn-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;}
+.conn-item.on{border-color:var(--accent);}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--text-dim);flex-shrink:0;}
+.conn-item.on .conn-dot{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+.conn-info{flex:1;min-width:0;}
+.conn-nm{font-size:12px;color:var(--cream);font-weight:600;}
+.conn-ad{font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.conn-rm{background:none;border:none;color:var(--text-dim);font-size:15px;cursor:pointer;padding:3px 5px;flex-shrink:0;}
+.conn-rm:active{color:var(--red);}
 .hint{font-size:10px;color:var(--text-dim);line-height:1.7;margin-top:5px;}
 .hint code{color:var(--cream);background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono';}
 
@@ -677,7 +687,16 @@ header{
 <div class="ov hide" id="setOv"><div class="sheet md">
   <div class="sheet-h"><span class="sheet-t">Configuración</span><button class="sheet-x" id="setX">×</button></div>
   <div class="col">
-    <div><div class="lbl">Conexión al PC (IP local)</div><input class="fin" id="ipIn" placeholder="192.168.1.XX" inputmode="numeric"><div class="hint">Misma WiFi. Mac: <code>ifconfig | grep "inet 192"</code> · Win: <code>ipconfig</code><br>En el PC: <code>python3 level_server.py</code></div></div>
+    <div>
+      <div class="lbl">Conexión al PC</div>
+      <div id="connList" class="conn-list"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <input class="fin" id="connName" placeholder="Nombre (Taller, Casa...)" style="flex:1;" maxlength="14">
+        <button class="act" id="connAdd" style="flex:0 0 auto;padding:11px 14px;">+</button>
+      </div>
+      <input class="fin" id="ipIn" placeholder="IP o URL del túnel" style="margin-top:6px;">
+      <div class="hint">IP local (<code>192.168.1.37</code>) si la app va por HTTP, o la URL del túnel (<code>https://…trycloudflare.com</code>) si va por HTTPS.<br>En el PC: <code>python level_server.py</code></div>
+    </div>
     <div><div class="lbl">Anthropic API Key</div><input class="fin" id="keyIn" type="password" placeholder="sk-ant-..."><div class="hint">Solo en este dispositivo. Nunca se envía a ningún servidor.</div></div>
     <div><div class="lbl">Firebase config</div><textarea class="fin" id="fbIn" rows="6" placeholder='{ "apiKey": "...", "projectId": "..." }'></textarea><div class="hint">Console → Project settings → SDK setup.</div></div>
     <button class="act p" id="setSave">Guardar y conectar</button>
@@ -708,6 +727,13 @@ header{
 const S={tool:'select',objects:[],sel:null,mapImg:null,nextId:1,cam:{x:0,y:0,z:1},drag:{on:false},cW:0,cH:0,ip:localStorage.getItem('ip')||'',conn:false,files:[],db:null,chatId:null,chatMsgs:[],chatsUnsub:null,msgsUnsub:null,levelId:null,lvlUnsub:null,undo:[],dirty:false,pending:null,scaleCm:0,charCm:0};
 const OBJS={spawn:{ab:'S',l:'Spawn',u:1,c:'#7aaa5a'},taza:{ab:'T',l:'Taza',u:1,c:'#e08c4a',phys:{dyn:0,col:'mesh_convex'}},carro_cafe:{ab:'C',l:'Carro',u:0,c:'#c4b068',phys:{dyn:0,col:'box'}},grano:{ab:'G',l:'Grano',u:0,c:'#a8895a',phys:{dyn:1,col:'mesh_convex'}},basura:{ab:'B',l:'Basura',u:0,c:'#d4593a',phys:{dyn:1,col:'mesh_convex'}},maquina:{ab:'M',l:'Máquina',u:0,c:'#6a9eb8',phys:{dyn:0,col:'box'}},cliente:{ab:'Cl',l:'Cliente',u:0,c:'#c478c4',phys:{dyn:1,col:'capsule'}},explorador:{ab:'E',l:'Explor.',u:0,c:'#78c4c4',phys:{dyn:1,col:'capsule'}},luz:{ab:'L',l:'Luz',u:0,c:'#f0c850',light:1}};
 const $=id=>document.getElementById(id);
+// Devuelve la base del servidor: acepta IP simple (192.168.1.37) o URL completa (https://x.trycloudflare.com)
+function srvURL(){
+  const v=(S.ip||'').trim();
+  if(!v)return '';
+  if(/^https?:\/\//i.test(v))return v.replace(/\/+$/,'');
+  return 'http://'+v.replace(/\/+$/,'')+':7845';
+}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -911,9 +937,9 @@ $("jsonPush").addEventListener("click",()=>{$("jsonOv").classList.add("hide");pu
 $('jsonPush').addEventListener('click',()=>{$('jsonOv').classList.add('hide');pushLevelToUnity();});
 
 // SETTINGS
-$('gearBtn').addEventListener('click',()=>{$('keyIn').value=localStorage.getItem('anthropicKey')||'';$('fbIn').value=localStorage.getItem('fbConfig')||'';$('ipIn').value=S.ip||'';$('setOv').classList.remove('hide');});
+$('gearBtn').addEventListener('click',()=>{$('keyIn').value=localStorage.getItem('anthropicKey')||'';$('fbIn').value=localStorage.getItem('fbConfig')||'';$('ipIn').value=S.ip||'';loadConns();$('setOv').classList.remove('hide');});
 $('setX').addEventListener('click',()=>$('setOv').classList.add('hide'));
-$('setSave').addEventListener('click',()=>{const k=$('keyIn').value.trim(),fb=$('fbIn').value.trim(),ip=$('ipIn').value.trim();if(k)localStorage.setItem('anthropicKey',k);if(ip&&ip!==S.ip){S.ip=ip;localStorage.setItem('ip',ip);connect();}if(fb){try{const c=JSON.parse(fb);localStorage.setItem('fbConfig',fb);initFB(c);}catch(e){toast('Firebase config inválido');return;}}toast('Guardado');$('setOv').classList.add('hide');});
+$('setSave').addEventListener('click',()=>{const k=$('keyIn').value.trim(),fb=$('fbIn').value.trim(),ip=$('ipIn').value.trim();if(k)localStorage.setItem('anthropicKey',k);if(ip&&ip!==S.ip){S.ip=ip;localStorage.setItem('ip',ip);renderConns();connect();}if(fb){try{const c=JSON.parse(fb);localStorage.setItem('fbConfig',fb);initFB(c);}catch(e){toast('Firebase config inválido');return;}}toast('Guardado');$('setOv').classList.add('hide');});
 
 // FIREBASE
 function initFB(c){try{let app;try{app=firebase.app(c.projectId);}catch(e){app=firebase.initializeApp(c,c.projectId);}S.db=firebase.firestore(app);loadChats();loadLevels();loadCustom();}catch(e){toast('Error Firebase');}}
@@ -921,6 +947,43 @@ const savedFB=localStorage.getItem('fbConfig');if(savedFB){try{initFB(JSON.parse
 
 
 
+
+
+// ─── CONEXIONES GUARDADAS ───────────────────────────────────────────────────
+let conns=[];
+function loadConns(){
+  try{conns=JSON.parse(localStorage.getItem('conns')||'[]');}catch(e){conns=[];}
+  if(!conns.length&&S.ip)conns=[{name:'PC',addr:S.ip}];
+  renderConns();
+}
+function saveConns(){localStorage.setItem('conns',JSON.stringify(conns));}
+function renderConns(){
+  const el=$('connList');if(!el)return;
+  if(!conns.length){el.innerHTML='<div style="font-size:11px;color:var(--text-dim);padding:6px 2px;">Sin conexiones guardadas — añade una abajo</div>';return;}
+  el.innerHTML=conns.map((c,i)=>`<div class="conn-item ${c.addr===S.ip?'on':''}" data-i="${i}"><span class="conn-dot"></span><div class="conn-info"><div class="conn-nm">${esc(c.name)}</div><div class="conn-ad">${esc(c.addr)}</div></div><button class="conn-rm" data-rm="${i}">×</button></div>`).join('');
+  el.querySelectorAll('.conn-item').forEach(d=>d.addEventListener('click',e=>{
+    if(e.target.dataset.rm!==undefined)return;
+    const c=conns[+d.dataset.i];if(!c)return;
+    S.ip=c.addr;localStorage.setItem('ip',c.addr);
+    $('ipIn').value=c.addr;$('connName').value=c.name;
+    renderConns();connect();toast('Conectando a '+c.name);
+  }));
+  el.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();conns.splice(+b.dataset.rm,1);saveConns();renderConns();
+  }));
+}
+$('connAdd').addEventListener('click',()=>{
+  const name=$('connName').value.trim()||'PC '+(conns.length+1);
+  const addr=$('ipIn').value.trim();
+  if(!addr){toast('Escribe la IP o URL primero');return;}
+  const ex=conns.find(c=>c.addr===addr);
+  if(ex){ex.name=name;}else{conns.push({name,addr});}
+  saveConns();
+  S.ip=addr;localStorage.setItem('ip',addr);
+  $('connName').value='';
+  renderConns();connect();
+  toast('Guardada: '+name);
+});
 
 // ─── ESCALA REAL ────────────────────────────────────────────────────────────
 $('scaleTrig').addEventListener('click',()=>{
@@ -1056,7 +1119,7 @@ function stopConsolePoll(){clearInterval(consolePoll);consolePoll=null;}
 async function fetchConsole(){
   if(!S.ip||!S.conn)return;
   try{
-    const r=await fetch(`http://${S.ip}:7845/unity-log?since=${consoleSince}`,{signal:AbortSignal.timeout(3000)});
+    const r=await fetch(`${srvURL()}/unity-log?since=${consoleSince}`,{signal:AbortSignal.timeout(3000)});
     if(!r.ok)return;const d=await r.json();
     if(!d.lines||!d.lines.length){consoleSince=d.now||consoleSince;return;}
     consoleSince=d.now;
@@ -1068,7 +1131,7 @@ async function fetchConsole(){
   }catch(e){}
 }
 $('consoleBtn').addEventListener('click',toggleConsole);
-$('consoleClear').addEventListener('click',async()=>{$('consoleMsgs').innerHTML='';consoleSince=0;if(S.ip)await fetch(`http://${S.ip}:7845/unity-log/clear`,{method:'POST'}).catch(()=>{});$('consoleStatus').textContent='Sin errores';$('consoleBtn').classList.remove('has-error','has-warn');});
+$('consoleClear').addEventListener('click',async()=>{$('consoleMsgs').innerHTML='';consoleSince=0;if(S.ip)await fetch(`${srvURL()}/unity-log/clear`,{method:'POST'}).catch(()=>{});$('consoleStatus').textContent='Sin errores';$('consoleBtn').classList.remove('has-error','has-warn');});
 
 // ─── PUSH NIVEL → UNITY ─────────────────────────────────────────────────────
 async function pushLevelToUnity(){
@@ -1083,7 +1146,7 @@ async function pushLevelToUnity(){
     fd.append(fname,blob,fname);
   }
   try{
-    const r=await fetch(`http://${S.ip}:7845/push-level`,{method:'POST',body:fd,signal:AbortSignal.timeout(30000)});
+    const r=await fetch(`${srvURL()}/push-level`,{method:'POST',body:fd,signal:AbortSignal.timeout(30000)});
     if(r.ok){const d=await r.json();toast(`Nivel → Unity (${d.files.length} archivos)`);}
     else toast('Error al enviar');
   }catch(e){toast('Sin conexión al PC');}
@@ -1145,7 +1208,7 @@ $('lvlDup').addEventListener('click',async()=>{
 // PC
 if(S.ip)$('ipIn').value=S.ip;
 function setConn(s,t){const d1=$('dot'),d2=$('dot2');if(d1)d1.className='dot '+s;if(d2)d2.className='dot '+s;}
-async function connect(){const ip=S.ip;if(!ip)return;setConn('wait','');try{const r=await fetch(`http://${ip}:7845/files`,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw 0;const d=await r.json();S.files=d.files||[];S.conn=true;setConn('ok','');for(const f of S.files){if(!f.content){try{const rr=await fetch(`http://${ip}:7845/file?path=${encodeURIComponent(f.path)}`);f.content=(await rr.json()).content||'';}catch(e){f.content='';}}}toast(`${S.files.length} scripts cargados`);renderScripts();if(consoleOpen)startConsolePoll();}catch(e){S.conn=false;setConn('err','');}}
+async function connect(){if(!S.ip)return;setConn('wait','');try{const r=await fetch(`http://${ip}:7845/files`,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw 0;const d=await r.json();S.files=d.files||[];S.conn=true;setConn('ok','');for(const f of S.files){if(!f.content){try{const rr=await fetch(`${srvURL()}/file?path=${encodeURIComponent(f.path)}`);f.content=(await rr.json()).content||'';}catch(e){f.content='';}}}toast(`${S.files.length} scripts cargados`);renderScripts();if(consoleOpen)startConsolePoll();}catch(e){S.conn=false;setConn('err','');}}
 
 // SCRIPTS
 function renderScripts(){const el=$('scrList');if(!S.conn){el.innerHTML='<div class="empty">Conecta al PC en Ajustes<br>para ver tus scripts</div>';return;}el.innerHTML=S.files.length?S.files.map(f=>`<div class="srow ${f.modified?'mod':''}" data-p="${f.path}"><svg style="width:15px;height:15px;color:var(--text-mid)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="sname">${esc(f.name)}</span><span class="ssize">${f.size}</span></div>`).join(''):'<div class="empty">Sin scripts en el proyecto</div>';el.querySelectorAll('.srow').forEach(r=>r.addEventListener('click',()=>{const f=S.files.find(x=>x.path===r.dataset.p);if(!f)return;$('svT').textContent=f.name;$('svCode').textContent=f.content||'(vacío)';$('svOv').classList.remove('hide');}));}
@@ -1164,7 +1227,7 @@ $('sendBtn').addEventListener('click',send);
 function parseFiles(t){const ch=[],re=/<<<FILE:\s*(.+?)>>>([\s\S]*?)<<<END>>>/g;let m;while((m=re.exec(t))){const fn=m[1].trim(),nc=m[2].trim(),ex=S.files.find(f=>f.name===fn);ch.push({filename:fn,path:ex?ex.path:null,newContent:nc,oldContent:ex?ex.content:'',isNew:!ex});}return ch;}
 function diff(a,b){const al=(a||'').split('\n'),bl=(b||'').split('\n'),r=[];let i=0,j=0;while(i<al.length||j<bl.length){if(i>=al.length){r.push({t:'a',s:bl[j++]});continue;}if(j>=bl.length){r.push({t:'d',s:al[i++]});continue;}if(al[i]===bl[j]){r.push({t:'c',s:al[i]});i++;j++;continue;}let f=0;for(let k=1;k<=3;k++){if(j+k<bl.length&&al[i]===bl[j+k]){for(let x=0;x<k;x++)r.push({t:'a',s:bl[j+x]});j+=k;f=1;break;}if(i+k<al.length&&al[i+k]===bl[j]){for(let x=0;x<k;x++)r.push({t:'d',s:al[i+x]});i+=k;f=1;break;}}if(!f){r.push({t:'d',s:al[i++]});r.push({t:'a',s:bl[j++]});}}return r;}
 function mkCard(ch){if(!ch.length)return null;const mod=ch.filter(c=>!c.isNew).length,ad=ch.filter(c=>c.isNew).length;const sm=[mod&&`${mod} modificado${mod>1?'s':''}`,ad&&`${ad} nuevo${ad>1?'s':''}`].filter(Boolean).join(', ');const uid='c'+Date.now();const card=document.createElement('div');card.className='card';card.innerHTML=`<div class="card-h"><div><div class="card-t">Cambios propuestos</div><div class="card-s">${sm}</div></div><button class="applybtn" id="${uid}">Aplicar</button></div><div class="ftabs">${ch.map((c,i)=>`<div class="ft ${i===0?'on':''}" data-i="${i}"><span class="d"></span>${esc(c.filename)}</div>`).join('')}</div><div class="vtabs"><div class="vt on" data-v="diff">Diff</div><div class="vt" data-v="full">Completo</div></div><div class="code-body"></div>`;let ai=0,av='diff';function rc(){const c=ch[ai],b=card.querySelector('.code-body');if(av==='diff'){const d=diff(c.oldContent,c.newContent);b.innerHTML=`<pre>${d.map(l=>`<span class="ln ${l.t}">${l.t==='a'?'+ ':l.t==='d'?'- ':'  '}${esc(l.s)}</span>`).join('\n')}</pre>`;}else{b.innerHTML=`<pre class="full">${esc(c.newContent)}</pre>`;}}rc();card.querySelector('.ftabs').addEventListener('click',e=>{const t=e.target.closest('.ft');if(!t)return;ai=+t.dataset.i;card.querySelectorAll('.ft').forEach(x=>x.classList.toggle('on',x===t));rc();});card.querySelector('.vtabs').addEventListener('click',e=>{const t=e.target.closest('.vt');if(!t)return;av=t.dataset.v;card.querySelectorAll('.vt').forEach(x=>x.classList.toggle('on',x===t));rc();});card.querySelector('#'+uid).addEventListener('click',()=>applyAll(ch,card));return card;}
-async function applyAll(ch,card){const b=card.querySelector('.applybtn');b.disabled=1;b.textContent='Guardando...';let n=0;for(const c of ch){if(!c.path){toast('Nuevo: '+c.filename);continue;}try{const r=await fetch(`http://${S.ip}:7845/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:c.path,content:c.newContent})});if(r.ok){const f=S.files.find(x=>x.path===c.path);if(f){f.content=c.newContent;f.modified=1;}n++;}}catch(e){toast('Error: '+c.filename);}}b.textContent=`${n} guardado${n!==1?'s':''}`;b.style.background='#3a4a26';b.style.color='var(--sage)';toast(`${n} script${n!==1?'s':''} en Unity`);}
+async function applyAll(ch,card){const b=card.querySelector('.applybtn');b.disabled=1;b.textContent='Guardando...';let n=0;for(const c of ch){if(!c.path){toast('Nuevo: '+c.filename);continue;}try{const r=await fetch(`${srvURL()}/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:c.path,content:c.newContent})});if(r.ok){const f=S.files.find(x=>x.path===c.path);if(f){f.content=c.newContent;f.modified=1;}n++;}}catch(e){toast('Error: '+c.filename);}}b.textContent=`${n} guardado${n!==1?'s':''}`;b.style.background='#3a4a26';b.style.color='var(--sage)';toast(`${n} script${n!==1?'s':''} en Unity`);}
 function drawMsg(role,text,changes,scroll=true){const el=$('msgs');const row=document.createElement('div');row.className='m '+(role==='user'?'user':'ai');if(role!=='user'){const a=document.createElement('div');a.className='av';a.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>';row.appendChild(a);}const inn=document.createElement('div');inn.className='in';const disp=text.replace(/<<<FILE:[\s\S]*?<<<END>>>/g,'').trim();if(disp){const b=document.createElement('div');b.className='bub';b.textContent=disp;inn.appendChild(b);}if(changes&&changes.length){const hy=changes.map(c=>({...c,oldContent:S.files.find(f=>f.name===c.filename)?.content||''}));const cd=mkCard(hy);if(cd)inn.appendChild(cd);}row.appendChild(inn);el.appendChild(row);if(scroll)el.scrollTop=el.scrollHeight;}
 async function send(){const text=intext.value.trim();if(!text)return;intext.value='';autoH();if(!S.chatId)await newChat();drawMsg('user',text,null);await saveMsg('user',text,null);$('sendBtn').disabled=1;$('typing').style.display='flex';$('msgs').scrollTop=$('msgs').scrollHeight;const key=localStorage.getItem('anthropicKey')||'';if(!key){$('typing').style.display='none';$('sendBtn').disabled=0;drawMsg('assistant','Añade tu Anthropic API key en Configuración (engranaje arriba a la derecha).');return;}let sys=`Eres un asistente de programación Unity C# para un juego 3D estilo Toad Treasure Tracker con temática de café. El jugador recoge granos, cuantos más recoge más gordo y lento. Pasos estrechos por los que no cabe gordo.\nCuando modificas o creas scripts usa EXACTAMENTE:\n<<<FILE: Nombre.cs>>>\n[contenido completo]\n<<<END>>>\nMúltiples bloques si hace falta. Explica brevemente después. Español. Conciso. Unity 6, URP, CharacterController.`;if(S.files.length){sys+='\n\nSCRIPTS:\n';S.files.forEach(f=>sys+=`\n--- ${f.name} ---\n${f.content||'(vacío)'}\n`);}if(S.objects.length){const w=S.mapImg?S.mapImg.width:800,h=S.mapImg?S.mapImg.height:600;sys+='\n\nNIVEL:\n'+JSON.stringify(S.objects.map(o=>({id:o.type+'_'+o.id,type:o.type,pos:{x:+(o.wx/w).toFixed(3),y:+(o.wy/h).toFixed(3)},note:o.note})));}const hist=S.chatMsgs.filter(m=>m.role&&m.content).map(m=>({role:m.role,content:m.content}));hist.push({role:'user',content:text});try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:sys,messages:hist})});const d=await r.json();const reply=d.content?.[0]?.text||'Error en la respuesta';$('typing').style.display='none';const ch=parseFiles(reply);drawMsg('assistant',reply,ch);await saveMsg('assistant',reply,ch);}catch(e){$('typing').style.display='none';drawMsg('assistant','Error al conectar con Claude.');}$('sendBtn').disabled=0;}
 
@@ -1300,7 +1363,7 @@ async function loadMeshFromPC(){
   if(!S.ip){toast('Configura la IP del PC en Ajustes');return;}
   toast('Pidiendo mesh al PC...');
   try{
-    const r=await fetch(`http://${S.ip}:7845/mesh`,{signal:AbortSignal.timeout(60000)});
+    const r=await fetch(`${srvURL()}/mesh`,{signal:AbortSignal.timeout(60000)});
     if(r.status===404){toast('El PC no tiene meshes en _meshes/');return;}
     if(!r.ok)throw 0;
     const name=r.headers.get('X-Mesh-Name')||'mesh.glb';
@@ -1408,10 +1471,10 @@ function guide(){if(angI>=ANG.length){stopRec();return;}const a=ANG[angI];$('sca
 function stopRec(){clearInterval(scanT);scanRec=0;$('recBtn').classList.remove('on');$('scanAngN').textContent='Procesando...';if(recorder&&recorder.state!=='inactive')recorder.stop();}
 $('recBtn').addEventListener('click',()=>{if(scanRec)stopRec();else startRec();});
 $('scanRetry').addEventListener('click',()=>{$('scanProgF').style.width='0';$('scanSend').classList.remove('show');$('scanRetry').style.display='none';$('scanSt').textContent='Pulsa grabar para el escaneado guiado';$('scanAngN').textContent='Listo para empezar';buildDots();blob=null;});
-$('scanSend').addEventListener('click',async()=>{if(!blob){toast('No hay grabación');return;}if(!S.ip){toast('Conecta al PC primero');return;}$('scanSend').textContent='Enviando...';try{const fd=new FormData();const ext=(recorder&&recorder.mimeType&&recorder.mimeType.includes('webm'))?'webm':'mp4';fd.append('video',blob,'scan.'+ext);const r=await fetch(`http://${S.ip}:7845/scan`,{method:'POST',body:fd,signal:AbortSignal.timeout(120000)});if(r.ok){const d=await r.json();$('scanSend').textContent='Enviado';toast('Vídeo enviado — procesando');if(d.mapUrl){const i=new Image();i.onload=()=>{S.mapImg=i;fit();render();toast('¡Mapa cargado!');};i.src=d.mapUrl;}}else{$('scanSend').textContent='Enviar al PC';toast('Error al enviar');}}catch(e){$('scanSend').textContent='Enviar al PC';toast('Error de conexión');}});
+$('scanSend').addEventListener('click',async()=>{if(!blob){toast('No hay grabación');return;}if(!S.ip){toast('Conecta al PC primero');return;}$('scanSend').textContent='Enviando...';try{const fd=new FormData();const ext=(recorder&&recorder.mimeType&&recorder.mimeType.includes('webm'))?'webm':'mp4';fd.append('video',blob,'scan.'+ext);const r=await fetch(`${srvURL()}/scan`,{method:'POST',body:fd,signal:AbortSignal.timeout(120000)});if(r.ok){const d=await r.json();$('scanSend').textContent='Enviado';toast('Vídeo enviado — procesando');if(d.mapUrl){const i=new Image();i.onload=()=>{S.mapImg=i;fit();render();toast('¡Mapa cargado!');};i.src=d.mapUrl;}}else{$('scanSend').textContent='Enviar al PC';toast('Error al enviar');}}catch(e){$('scanSend').textContent='Enviar al PC';toast('Error de conexión');}});
 
 // INIT
-initGrass();resize();fit();render();loadCustom();
+initGrass();resize();fit();render();loadCustom();loadConns();
 if(S.ip)connect();
 if(!savedFB){S.chatId='local_0';welcome();}
 </script>
