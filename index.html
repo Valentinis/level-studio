@@ -1628,6 +1628,69 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',()=>{if(!MV.mesh){to
 // SCAN
 const ANG=[{n:'Vista frontal',h:'Enfrenta la cámara',d:6},{n:'Lado derecho',h:'Gira 45° derecha',d:5},{n:'Perfil derecho',h:'Hasta el lado derecho',d:5},{n:'Trasera',h:'Pasa por detrás',d:6},{n:'Perfil izquierdo',h:'Al lado izquierdo',d:5},{n:'Lado izquierdo',h:'Casi al frente',d:5},{n:'Superior',h:'Eleva y mira abajo',d:6},{n:'Ángulo bajo',h:'Baja, apunta arriba',d:6}];
 let stream=null,recorder=null,chunks=[],angI=0,scanT=null,blob=null,scanRec=0;
+// ─── MODO FOTO ──────────────────────────────────────────────────────────────
+// Las fotos dan mejor reconstrucción que el vídeo: sin compresión temporal,
+// sin artefactos de movimiento y con nitidez completa en cada disparo.
+let scanMode='video', photos=[], photoTimer=null, photoCanvas=null;
+const PHOTO_INTERVAL=900, PHOTO_TARGET=60;
+
+function resetCapture(){
+  photos=[];blob=null;
+  $('photoCount').textContent='0 fotos';
+  $('scanProgF').style.width='0';
+  $('scanSend').classList.remove('show');
+  $('scanRetry').style.display='none';
+  $('scanSend').textContent='Enviar al PC';
+}
+
+function capturarFoto(){
+  if(!stream)return;
+  const v=$('scanVid');
+  if(!v.videoWidth)return;
+  if(!photoCanvas)photoCanvas=document.createElement('canvas');
+  photoCanvas.width=v.videoWidth;photoCanvas.height=v.videoHeight;
+  photoCanvas.getContext('2d').drawImage(v,0,0);
+  photoCanvas.toBlob(b=>{
+    if(!b)return;
+    photos.push(b);
+    $('photoCount').textContent=photos.length+' fotos';
+    $('scanProgF').style.width=Math.min(100,photos.length/PHOTO_TARGET*100)+'%';
+    if(photos.length>=PHOTO_TARGET&&photoTimer)$('photoHint').textContent='Ya tienes suficientes — puedes parar';
+  },'image/jpeg',0.94);
+}
+
+function startPhotos(){
+  if(!stream){$('scanSt').textContent='Cámara no disponible';return;}
+  resetCapture();
+  $('recBtn').classList.add('on');
+  $('scanAngN').textContent='Disparando';
+  $('scanSt').textContent='Gira despacio y de forma continua';
+  $('photoHint').textContent='Solápalas: cada foto comparte zona con la anterior';
+  capturarFoto();
+  photoTimer=setInterval(capturarFoto,PHOTO_INTERVAL);
+}
+
+function stopPhotos(){
+  clearInterval(photoTimer);photoTimer=null;
+  $('recBtn').classList.remove('on');
+  $('scanAngN').textContent='Listo para enviar';
+  $('scanSt').textContent=photos.length+' fotos capturadas'+(photos.length<25?' — pocas, puede fallar':'');
+  if(photos.length){$('scanSend').classList.add('show');$('scanRetry').style.display='block';}
+}
+
+document.querySelectorAll('.mode-opt').forEach(m=>m.addEventListener('click',()=>{
+  if(scanRec||photoTimer){toast('Para la captura primero');return;}
+  scanMode=m.dataset.mode;
+  document.querySelectorAll('.mode-opt').forEach(x=>x.classList.toggle('on',x===m));
+  const foto=scanMode==='photo';
+  $('photoInfo').style.display=foto?'flex':'none';
+  $('scanDots').style.display=foto?'none':'flex';
+  $('scanSt').textContent=foto?'Pulsa el botón rojo para disparar en ráfaga':'Pulsa grabar para el escaneado guiado';
+  $('scanAngN').textContent=foto?'Modo fotos':'Listo para empezar';
+  resetCapture();
+}));
+
+
 function buildDots(){$('scanDots').innerHTML=ANG.map(()=>'<i></i>').join('');}
 buildDots();
 async function startCam(){
