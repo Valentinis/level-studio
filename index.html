@@ -341,7 +341,12 @@ header{
 .proc-status.ok{color:var(--sage);}
 .proc-status.err{color:var(--red);}
 .proc-log{background:#0a0907;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;max-height:110px;overflow-y:auto;font-family:'JetBrains Mono';font-size:9px;line-height:1.6;color:var(--text-dim);}
-.proc-go{width:100%;padding:11px;border-radius:10px;border:1px solid var(--accent);background:rgba(224,140,74,.12);color:var(--accent);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.proc-bar{position:relative;height:20px;background:var(--surface3);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+.proc-bar-f{height:100%;background:linear-gradient(90deg,var(--accent-soft),var(--accent));width:0;transition:width .5s ease;border-radius:10px;}
+.proc-bar-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono';color:var(--cream);text-shadow:0 1px 3px rgba(0,0,0,.7);}
+.proc-stop{flex:0 0 auto;padding:11px 18px;border-radius:10px;border:1px solid var(--red);background:rgba(212,89,58,.12);color:var(--red);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.proc-stop:active{transform:scale(.97);}
+.proc-go{flex:1;width:100%;padding:11px;border-radius:10px;border:1px solid var(--accent);background:rgba(224,140,74,.12);color:var(--accent);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
 .proc-go:active{transform:scale(.98);}
 .proc-go:disabled{opacity:.45;}
 
@@ -688,8 +693,15 @@ header{
         </div>
         <div class="proc-sel" id="procSel"></div>
         <div class="proc-status" id="procStatus">Envía un scan y púlsalo para reconstruir en 3D</div>
+        <div class="proc-bar" id="procBar" style="display:none;">
+          <div class="proc-bar-f" id="procBarF"></div>
+          <span class="proc-bar-pct" id="procBarPct">0%</span>
+        </div>
         <div class="proc-log" id="procLog" style="display:none;"></div>
-        <button class="proc-go" id="procGo">Procesar último scan</button>
+        <div style="display:flex;gap:8px;">
+          <button class="proc-stop" id="procStop" style="display:none;">Cancelar</button>
+          <button class="proc-go" id="procGo">Procesar último scan</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1394,8 +1406,22 @@ $('procGo').addEventListener('click',async()=>{
     if(!r.ok){procSet(d.error||'No se pudo lanzar','err');$('procGo').disabled=false;return;}
     procSet('Procesando '+d.video,'work');
     $('procLog').style.display='block';
+    $('procBar').style.display='block';
+    $('procBarF').style.width='1%';$('procBarPct').textContent='1%';
+    $('procStop').style.display='block';
     startProcPoll();
   }catch(e){procSet('Sin conexión al PC','err');$('procGo').disabled=false;}
+});
+
+$('procStop').addEventListener('click',async()=>{
+  if(!confirm('¿Cancelar el procesado? Se perderá el trabajo hecho.'))return;
+  $('procStop').disabled=true;
+  procSet('Cancelando...','work');
+  try{
+    await fetch(`${srvURL()}/process/cancel`,{method:'POST',signal:AbortSignal.timeout(10000)});
+    toast('Procesado cancelado');
+  }catch(e){toast('No se pudo cancelar');}
+  $('procStop').disabled=false;
 });
 
 function startProcPoll(){if(procPoll)return;pollProc();procPoll=setInterval(pollProc,3000);}
@@ -1415,15 +1441,26 @@ async function pollProc(){
     }
     if(d.activo){
       $('procGo').disabled=true;
-      procSet(`${d.fase} · ${d.min} min`,'work');
+      $('procStop').style.display='block';
+      $('procBar').style.display='block';
+      const pct=Math.max(1,Math.min(100,d.pct||0));
+      $('procBarF').style.width=pct+'%';
+      $('procBarPct').textContent=pct+'%';
+      let txt=d.fase;
+      if(d.nodo)txt+=` ${d.nodo}/${d.nodos}`;
+      if(d.detalle)txt+=' · '+d.detalle;
+      procSet(`${txt} · ${d.min} min`,'work');
     }else{
       stopProcPoll();
       $('procGo').disabled=false;
-      if(d.error){procSet('Error: '+d.error.slice(0,90),'err');}
+      $('procStop').style.display='none';
+      if(d.error){procSet('Error: '+d.error.slice(0,90),'err');$('procBar').style.display='none';}
+      else if(d.fase==='Cancelado'){procSet('Cancelado','');$('procBar').style.display='none';}
       else if(d.resultado){
+        $('procBarF').style.width='100%';$('procBarPct').textContent='100%';
         procSet('Listo: '+d.resultado,'ok');
         toast('Mesh listo — ábrelo en la pestaña Mesh');
-      }else if(d.fase){procSet(d.fase,'');}
+      }else if(d.fase){procSet(d.fase,'');$('procBar').style.display='none';}
     }
   }catch(e){}
 }
@@ -1738,6 +1775,7 @@ document.querySelectorAll('.mode-opt').forEach(m=>m.addEventListener('click',()=
   $('photoInfo').style.display=esFoto?'flex':'none';
   $('scanDots').style.display=esFoto?'none':'flex';
   $('recBtn').classList.toggle('shutter',scanMode==='manual');
+  startCam();
   $('scanReset').style.display=scanMode==='video'?'none':'block';
   if(scanMode==='manual'){
     $('scanSt').textContent='Pulsa para tomar cada foto, una a una';
@@ -1758,7 +1796,17 @@ document.querySelectorAll('.mode-opt').forEach(m=>m.addEventListener('click',()=
 function buildDots(){$('scanDots').innerHTML=ANG.map(()=>'<i></i>').join('');}
 buildDots();
 async function startCam(){
-  if(stream)return;
+  // Si ya hay stream pero el vídeo no lo está pintando, reengancharlo
+  if(stream){
+    const v=$('scanVid');
+    const vivo=stream.getVideoTracks().some(t=>t.readyState==='live');
+    if(vivo){
+      if(v.srcObject!==stream)v.srcObject=stream;
+      if(v.paused)v.play().catch(()=>{});
+      return;
+    }
+    stream.getTracks().forEach(t=>t.stop());stream=null;   // muerto: pedir uno nuevo
+  }
   // 1. Contexto seguro: iOS solo expone la cámara en HTTPS (o localhost)
   if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
     $('scanSt').textContent='La cámara requiere HTTPS — abre la app desde su URL (GitHub Pages), no como archivo';
@@ -1829,6 +1877,10 @@ $('scanSend').addEventListener('click',async()=>{
       scanSel=null;updateScanSel();loadScans();
     }else{$('scanSend').textContent='Enviar al PC';toast('Error al enviar');}
   }catch(e){$('scanSend').textContent='Enviar al PC';toast('Error de conexión');}
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&document.querySelector('.tab.on')?.dataset.tab==='scan')startCam();
 });
 
 // INIT
