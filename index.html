@@ -690,6 +690,7 @@ header{
           <div class="proc-row"><span>Criba borrosos</span><input type="range" id="procNit" min="0" max="90" step="5" value="55"><b id="procNitV">55%</b></div>
           <div class="proc-row"><span>Triángulos</span><input type="range" id="procTris" min="10" max="200" step="10" value="50"><b id="procTrisV">50k</b></div>
           <div class="proc-row" style="margin-top:9px;"><span>Aislar objeto</span><label class="sw"><input type="checkbox" id="procMask"><i></i></label><b id="procMaskV">no</b></div>
+          <div class="proc-row"><span>Limpiar malla</span><label class="sw"><input type="checkbox" id="procClean" checked><i></i></label><b id="procCleanV">sí</b></div>
         </div>
         <div class="proc-sel" id="procSel"></div>
         <div class="proc-status" id="procStatus">Envía un scan y púlsalo para reconstruir en 3D</div>
@@ -1384,6 +1385,7 @@ document.querySelectorAll('.pset').forEach(p=>p.addEventListener('click',()=>{
 }));
 function manualSiTocado(){procPreset='';document.querySelectorAll('.pset').forEach(x=>x.classList.toggle('on',x.dataset.preset===''));}
 $('procMask').addEventListener('change',e=>$('procMaskV').textContent=e.target.checked?'sí':'no');
+$('procClean').addEventListener('change',e=>$('procCleanV').textContent=e.target.checked?'sí':'no');
 $('procFps').addEventListener('input',manualSiTocado);
 $('procTris').addEventListener('input',manualSiTocado);
 $('procNit').addEventListener('input',manualSiTocado);
@@ -1400,7 +1402,7 @@ $('procGo').addEventListener('click',async()=>{
   try{
     const r=await fetch(`${srvURL()}/process`,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({video:scanSel||'',preset:procPreset||'',mascara:$('procMask').checked,fps:+$('procFps').value,tris:+$('procTris').value*1000,nitidez:+$('procNit').value/100}),
+      body:JSON.stringify({video:scanSel||'',preset:procPreset||'',mascara:$('procMask').checked,limpiar:$('procClean').checked,fps:+$('procFps').value,tris:+$('procTris').value*1000,nitidez:+$('procNit').value/100}),
       signal:AbortSignal.timeout(15000)});
     const d=await r.json();
     if(!r.ok){procSet(d.error||'No se pudo lanzar','err');$('procGo').disabled=false;return;}
