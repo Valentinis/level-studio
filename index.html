@@ -215,6 +215,11 @@ header{
 .scan-ang-n{font-size:15px;font-weight:700;color:var(--cream);}
 .scan-prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(232,220,196,.12);}
 .scan-prog-f{height:100%;background:var(--accent);transition:width .25s;width:0;}
+.shutter-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
+.rec.shutter{background:var(--cream);border-color:var(--accent);}
+.rec.shutter .ric{width:44px;height:44px;background:var(--accent);border-radius:50%;}
+.rec.paused{background:var(--sage);}
+.rec.paused .ric{width:0;height:0;background:transparent;border-radius:0;border-left:18px solid var(--cream);border-top:12px solid transparent;border-bottom:12px solid transparent;margin-left:5px;}
 .scan-ctrl{padding:18px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
 .mode-switch{display:flex;gap:5px;margin-bottom:13px;}
 .mode-opt{flex:1;text-align:center;font-size:11px;font-weight:600;padding:7px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text-mid);cursor:pointer;}
@@ -640,12 +645,14 @@ header{
         <div class="scan-frame"></div>
         <div class="scan-ang"><div class="scan-ang-l">Ángulo actual</div><div class="scan-ang-n" id="scanAngN">Listo para empezar</div></div>
         <div class="scan-prog"><div class="scan-prog-f" id="scanProgF"></div></div>
+        <div class="shutter-flash" id="shutterFlash"></div>
       </div>
     </div>
     <div class="scan-ctrl">
       <div class="mode-switch">
         <div class="mode-opt on" data-mode="video">Vídeo</div>
-        <div class="mode-opt" data-mode="photo">Fotos</div>
+        <div class="mode-opt" data-mode="photo">Ráfaga</div>
+        <div class="mode-opt" data-mode="manual">Manual</div>
       </div>
       <div class="scan-dots" id="scanDots"></div>
       <div class="scan-st" id="scanSt">Pulsa grabar para el escaneado guiado</div>
@@ -656,7 +663,8 @@ header{
       <div class="scan-row">
         <button class="scan-side" id="scanSend">Enviar al PC</button>
         <div class="rec" id="recBtn"><div class="ric"></div></div>
-        <button class="scan-side" id="scanRetry" style="display:none;">Repetir</button>
+        <button class="scan-side" id="scanUndo" style="display:none;">Deshacer</button>
+        <button class="scan-side" id="scanReset" style="display:none;">Reiniciar</button>
       </div>
       <div class="proc-box" id="procBox">
         <div class="proc-head">
@@ -1639,7 +1647,8 @@ function resetCapture(){
   $('photoCount').textContent='0 fotos';
   $('scanProgF').style.width='0';
   $('scanSend').classList.remove('show');
-  $('scanRetry').style.display='none';
+  $('scanReset').style.display='none';
+  $('scanUndo').style.display='none';
   $('scanSend').textContent='Enviar al PC';
 }
 
@@ -1655,17 +1664,54 @@ function capturarFoto(){
     photos.push(b);
     $('photoCount').textContent=photos.length+' fotos';
     $('scanProgF').style.width=Math.min(100,photos.length/PHOTO_TARGET*100)+'%';
-    if(photos.length>=PHOTO_TARGET&&photoTimer)$('photoHint').textContent='Ya tienes suficientes — puedes parar';
+    if(scanMode==='manual'){
+      $('scanSend').classList.add('show');
+      $('scanUndo').style.display='block';
+      $('scanReset').style.display='block';
+      $('scanSt').textContent=photos.length<25
+        ? `${photos.length} de ~40 · sigue dando la vuelta`
+        : `${photos.length} fotos · suficientes para reconstruir`;
+      flashFoto();
+    }else if(photos.length>=PHOTO_TARGET&&photoTimer){
+      $('photoHint').textContent='Ya tienes suficientes — puedes parar';
+    }
   },'image/jpeg',0.94);
+}
+
+// Destello breve al disparar, para saber que la foto entró
+function flashFoto(){
+  const f=$('shutterFlash');
+  if(!f)return;
+  f.style.transition='none';f.style.opacity='0.55';
+  requestAnimationFrame(()=>{f.style.transition='opacity .28s';f.style.opacity='0';});
+}
+
+function tomarFotoManual(){
+  if(!stream){$('scanSt').textContent='Cámara no disponible';return;}
+  capturarFoto();
+}
+
+function deshacerFoto(){
+  if(!photos.length)return;
+  photos.pop();
+  $('photoCount').textContent=photos.length+' fotos';
+  $('scanProgF').style.width=Math.min(100,photos.length/PHOTO_TARGET*100)+'%';
+  $('scanSt').textContent=photos.length?`${photos.length} fotos`:'Sin fotos — pulsa para disparar';
+  if(!photos.length){
+    $('scanSend').classList.remove('show');
+    $('scanUndo').style.display='none';
+    $('scanReset').style.display='none';
+  }
 }
 
 function startPhotos(){
   if(!stream){$('scanSt').textContent='Cámara no disponible';return;}
-  resetCapture();
   $('recBtn').classList.add('on');
-  $('scanAngN').textContent='Disparando';
+  $('recBtn').classList.remove('paused');
+  $('scanAngN').textContent=photos.length?'Reanudando':'Disparando';
   $('scanSt').textContent='Gira despacio y de forma continua';
   $('photoHint').textContent='Solápalas: cada foto comparte zona con la anterior';
+  $('scanSend').classList.remove('show');
   capturarFoto();
   photoTimer=setInterval(capturarFoto,PHOTO_INTERVAL);
 }
@@ -1673,20 +1719,38 @@ function startPhotos(){
 function stopPhotos(){
   clearInterval(photoTimer);photoTimer=null;
   $('recBtn').classList.remove('on');
-  $('scanAngN').textContent='Listo para enviar';
-  $('scanSt').textContent=photos.length+' fotos capturadas'+(photos.length<25?' — pocas, puede fallar':'');
-  if(photos.length){$('scanSend').classList.add('show');$('scanRetry').style.display='block';}
+  $('recBtn').classList.add('paused');
+  $('scanAngN').textContent='En pausa';
+  $('scanSt').textContent=photos.length+' fotos'+(photos.length<25?' — pocas, sigue girando':' · pulsa otra vez para seguir');
+  $('photoHint').textContent='Puedes recolocar el objeto y reanudar';
+  if(photos.length){
+    $('scanSend').classList.add('show');
+    $('scanReset').style.display='block';
+    $('scanUndo').style.display='block';
+  }
 }
 
 document.querySelectorAll('.mode-opt').forEach(m=>m.addEventListener('click',()=>{
   if(scanRec||photoTimer){toast('Para la captura primero');return;}
   scanMode=m.dataset.mode;
   document.querySelectorAll('.mode-opt').forEach(x=>x.classList.toggle('on',x===m));
-  const foto=scanMode==='photo';
-  $('photoInfo').style.display=foto?'flex':'none';
-  $('scanDots').style.display=foto?'none':'flex';
-  $('scanSt').textContent=foto?'Pulsa el botón rojo para disparar en ráfaga':'Pulsa grabar para el escaneado guiado';
-  $('scanAngN').textContent=foto?'Modo fotos':'Listo para empezar';
+  const esFoto=scanMode!=='video';
+  $('photoInfo').style.display=esFoto?'flex':'none';
+  $('scanDots').style.display=esFoto?'none':'flex';
+  $('recBtn').classList.toggle('shutter',scanMode==='manual');
+  $('scanReset').style.display=scanMode==='video'?'none':'block';
+  if(scanMode==='manual'){
+    $('scanSt').textContent='Pulsa para tomar cada foto, una a una';
+    $('scanAngN').textContent='Foto manual';
+    $('photoHint').textContent='Da la vuelta al objeto solapando encuadres';
+  }else if(scanMode==='photo'){
+    $('scanSt').textContent='Pulsa el botón rojo para disparar en ráfaga';
+    $('scanAngN').textContent='Ráfaga';
+    $('photoHint').textContent='Gira despacio mientras dispara solo';
+  }else{
+    $('scanSt').textContent='Pulsa grabar para el escaneado guiado';
+    $('scanAngN').textContent='Listo para empezar';
+  }
   resetCapture();
 }));
 
@@ -1718,16 +1782,32 @@ async function startCam(){
 function stopCam(){
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;$('scanVid').srcObject=null;}
 }
-function startRec(){if(!stream){$('scanSt').textContent='Cámara no disponible';return;}chunks=[];angI=0;scanRec=1;$('recBtn').classList.add('on');$('scanSend').classList.remove('show');$('scanRetry').style.display='none';blob=null;let mt='';for(const c of ['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm']){if(MediaRecorder.isTypeSupported(c)){mt=c;break;}}
+function startRec(){if(!stream){$('scanSt').textContent='Cámara no disponible';return;}chunks=[];angI=0;scanRec=1;$('recBtn').classList.add('on');$('scanSend').classList.remove('show');$('scanReset').style.display='none';blob=null;let mt='';for(const c of ['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm']){if(MediaRecorder.isTypeSupported(c)){mt=c;break;}}
   try{recorder=new MediaRecorder(stream,mt?{mimeType:mt,videoBitsPerSecond:12000000}:{videoBitsPerSecond:12000000});}
-  catch(e){recorder=new MediaRecorder(stream);}recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};recorder.onstop=()=>{blob=new Blob(chunks,{type:recorder.mimeType});$('scanSt').textContent=`Completo · ${(blob.size/1048576).toFixed(1)}MB`;$('scanSend').classList.add('show');$('scanRetry').style.display='block';$('scanProgF').style.width='100%';};recorder.start(1000);guide();}
+  catch(e){recorder=new MediaRecorder(stream);}recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};recorder.onstop=()=>{blob=new Blob(chunks,{type:recorder.mimeType});$('scanSt').textContent=`Completo · ${(blob.size/1048576).toFixed(1)}MB`;$('scanSend').classList.add('show');$('scanReset').style.display='block';$('scanProgF').style.width='100%';};recorder.start(1000);guide();}
 function guide(){if(angI>=ANG.length){stopRec();return;}const a=ANG[angI];$('scanAngN').textContent=a.n;$('scanSt').textContent=a.h;document.querySelectorAll('.scan-dots i').forEach((d,j)=>d.className=j<angI?'done':j===angI?'now':'');const tot=ANG.reduce((s,x)=>s+x.d,0),dn=ANG.slice(0,angI).reduce((s,x)=>s+x.d,0);let el=0;scanT=setInterval(()=>{el+=.1;$('scanProgF').style.width=((dn+el)/tot*100)+'%';if(el>=a.d){clearInterval(scanT);angI++;guide();}},100);}
 function stopRec(){clearInterval(scanT);scanRec=0;$('recBtn').classList.remove('on');$('scanAngN').textContent='Procesando...';if(recorder&&recorder.state!=='inactive')recorder.stop();}
-$('recBtn').addEventListener('click',()=>{if(scanMode==='photo'){photoTimer?stopPhotos():startPhotos();}else{scanRec?stopRec():startRec();}});
-$('scanRetry').addEventListener('click',()=>{resetCapture();$('scanProgF').style.width='0';$('scanSend').classList.remove('show');$('scanRetry').style.display='none';$('scanSt').textContent='Pulsa grabar para el escaneado guiado';$('scanAngN').textContent='Listo para empezar';buildDots();blob=null;});
+$('recBtn').addEventListener('click',()=>{
+  if(scanMode==='manual')tomarFotoManual();
+  else if(scanMode==='photo')photoTimer?stopPhotos():startPhotos();
+  else scanRec?stopRec():startRec();
+});
+$('scanUndo').addEventListener('click',deshacerFoto);
+$('scanReset').addEventListener('click',()=>{
+  if((photos.length>3||blob)&&!confirm('¿Descartar la captura y empezar de cero?'))return;
+  if(photoTimer){clearInterval(photoTimer);photoTimer=null;}
+  if(scanRec)stopRec();
+  resetCapture();
+  buildDots();
+  $('recBtn').classList.remove('on','paused');
+  if(scanMode==='manual'){$('scanSt').textContent='Pulsa para tomar cada foto, una a una';$('scanAngN').textContent='Foto manual';}
+  else if(scanMode==='photo'){$('scanSt').textContent='Pulsa el botón rojo para disparar en ráfaga';$('scanAngN').textContent='Ráfaga';}
+  else{$('scanSt').textContent='Pulsa grabar para el escaneado guiado';$('scanAngN').textContent='Listo para empezar';}
+  toast('Captura reiniciada');
+});
 $('scanSend').addEventListener('click',async()=>{
   if(!S.ip){toast('Conecta al PC en Ajustes');return;}
-  const esFoto=scanMode==='photo';
+  const esFoto=scanMode!=='video';
   if(esFoto&&!photos.length){toast('No hay fotos');return;}
   if(!esFoto&&!blob){toast('No hay grabación');return;}
   $('scanSend').textContent='Enviando...';
