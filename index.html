@@ -1424,7 +1424,8 @@ $('procStop').addEventListener('click',async()=>{
   $('procStop').disabled=false;
 });
 
-function startProcPoll(){if(procPoll)return;pollProc();procPoll=setInterval(pollProc,3000);}
+let procGrace=0;
+function startProcPoll(){if(procPoll)return;procGrace=Date.now()+12000;pollProc();procPoll=setInterval(pollProc,3000);}
 function stopProcPoll(){clearInterval(procPoll);procPoll=null;}
 
 async function pollProc(){
@@ -1450,6 +1451,11 @@ async function pollProc(){
       if(d.nodo)txt+=` ${d.nodo}/${d.nodos}`;
       if(d.detalle)txt+=' · '+d.detalle;
       procSet(`${txt} · ${d.min} min`,'work');
+    }else if(Date.now()<procGrace&&!d.error&&!d.resultado){
+      // Recién lanzado: el servidor puede tardar un instante en reflejarlo
+      $('procGo').disabled=true;
+      $('procStop').style.display='block';
+      procSet('Arrancando...','work');
     }else{
       stopProcPoll();
       $('procGo').disabled=false;
