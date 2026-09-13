@@ -601,7 +601,7 @@ header{
     <div class="mesh-head">
       <span class="mesh-title">Control de calidad</span>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="wf-toggle" id="glbFileBtn" title="Cargar GLB del dispositivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg></button>
+        <button class="wf-toggle" id="glbFileBtn" title="Cargar mesh del dispositivo (GLB, OBJ, USDZ)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg></button>
         <button class="wf-toggle" id="glbPcBtn" title="Recibir mesh del PC"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>
         <button class="wf-toggle" id="wfBtn" title="Ver topología"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
       <button class="mesh-approve" id="meshApprove">Aprobar → Unity</button>
@@ -611,7 +611,7 @@ header{
       <div class="mesh-empty" id="meshEmpty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
         <div class="mesh-empty-t">Sin mesh cargado</div>
-        <div class="mesh-empty-s">Carga un .glb desde el dispositivo<br>o recíbelo del PC procesado</div>
+        <div class="mesh-empty-s">Carga GLB, OBJ o USDZ del dispositivo<br>o recíbelo del PC procesado<br><span style="opacity:.7">Para OBJ con textura, selecciona también el .mtl y el .jpg</span></div>
         <button class="mesh-demo-btn" id="demoBtn">Probar con terreno demo</button>
       </div>
     </div>
@@ -815,11 +815,14 @@ header{
 </div></div>
 
 <input type="file" id="mapfi" accept="image/*">
-<input type="file" id="glbFi" accept=".glb,.gltf,model/gltf-binary" style="display:none;">
+<input type="file" id="glbFi" accept=".glb,.gltf,.obj,.usdz,.zip,.mtl,.jpg,.jpeg,.png" multiple style="display:none;">
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/USDZLoader.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
@@ -1615,15 +1618,125 @@ async function loadMeshFromPC(){
     loadGLBBuffer(buf,name);
   }catch(e){toast('Sin conexión al PC');}
 }
+// ─── CARGA DE MESH: GLB, OBJ (+MTL y texturas) y USDZ ──────────────────────
+// RealityScan exporta OBJ o USDZ, no GLB, así que hay que soportar los tres.
+function extDe(nombre){const m=(nombre||'').toLowerCase().match(/\.([a-z0-9]+)$/);return m?m[1]:'';}
+
+function leer(f,como){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result);
+    r.onerror=()=>rej(new Error('No se pudo leer '+f.name));
+    como==='text'?r.readAsText(f):r.readAsArrayBuffer(f);
+  });
+}
+
+async function cargarArchivos(files){
+  if(!files||!files.length)return;
+  const lista=Array.from(files);
+  MV.archivos=lista;   // se guardan para poder mandarlos a Unity tal cual
+  const principal=lista.find(f=>['glb','gltf','obj','usdz'].includes(extDe(f.name)));
+  if(!principal){toast('Formato no soportado — usa GLB, OBJ o USDZ');return;}
+  const ext=extDe(principal.name);
+  toast('Cargando '+principal.name+'...');
+  try{
+    if(ext==='glb'||ext==='gltf'){
+      loadGLBBuffer(await leer(principal),principal.name);
+    }else if(ext==='obj'){
+      await cargarOBJ(principal,lista);
+    }else if(ext==='usdz'){
+      await cargarUSDZ(principal);
+    }
+  }catch(err){
+    console.error(err);
+    toast('Error: '+(err.message||err));
+  }
+}
+
+async function cargarOBJ(objFile,todos){
+  if(!THREE.OBJLoader){toast('OBJLoader no disponible — revisa la conexión');return;}
+  const texto=await leer(objFile,'text');
+
+  // Materiales y texturas que vengan junto al .obj
+  let materiales=null;
+  const mtlFile=todos.find(f=>extDe(f.name)==='mtl');
+  const imgs=todos.filter(f=>['jpg','jpeg','png'].includes(extDe(f.name)));
+  if(mtlFile&&THREE.MTLLoader){
+    try{
+      const mtlTexto=await leer(mtlFile,'text');
+      const urls={};
+      for(const im of imgs)urls[im.name]=URL.createObjectURL(im);
+      const ml=new THREE.MTLLoader();
+      // Redirigir las rutas de textura a los archivos que el usuario ha elegido
+      ml.setResourcePath('');
+      const mgr=new THREE.LoadingManager();
+      mgr.setURLModifier(u=>{
+        const base=u.split('/').pop();
+        return urls[base]||u;
+      });
+      ml.manager=mgr;
+      materiales=ml.parse(mtlTexto,'');
+      materiales.preload();
+    }catch(e){console.warn('MTL no aplicado:',e);}
+  }
+
+  const loader=new THREE.OBJLoader();
+  if(materiales)loader.setMaterials(materiales);
+  const grupo=loader.parse(texto);
+  usarObjeto3D(grupo,objFile.name,!!(mtlFile&&imgs.length));
+}
+
+async function cargarUSDZ(f){
+  if(!THREE.USDZLoader){toast('USDZLoader no disponible — exporta en OBJ');return;}
+  const buf=await leer(f);
+  const grupo=new THREE.USDZLoader().parse(buf);
+  usarObjeto3D(grupo,f.name,true);
+}
+
+/// Extrae la geometría de un grupo cargado y la manda al visor
+function usarObjeto3D(raiz,nombre,conTextura){
+  const partes=[];
+  raiz.updateMatrixWorld(true);
+  raiz.traverse(o=>{
+    if(o.isMesh&&o.geometry&&o.geometry.attributes.position){
+      const g=o.geometry.clone();
+      g.applyMatrix4(o.matrixWorld);
+      partes.push({g,mat:o.material});
+    }
+  });
+  if(!partes.length){toast('El archivo no contiene geometría');return;}
+
+  let geo;
+  if(partes.length===1)geo=partes[0].g;
+  else{
+    // Varias piezas: unirlas conservando solo las posiciones
+    const pos=[];
+    for(const p of partes){
+      const a=p.g.attributes.position;
+      const idx=p.g.index?Array.from(p.g.index.array):null;
+      if(idx){for(const i of idx)pos.push(a.getX(i),a.getY(i),a.getZ(i));}
+      else{for(let i=0;i<a.count;i++)pos.push(a.getX(i),a.getY(i),a.getZ(i));}
+    }
+    geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  }
+
+  // Conservar la textura si la hay
+  let mat=null;
+  const m0=partes[0].mat;
+  const conMapa=Array.isArray(m0)?m0.find(x=>x&&x.map):(m0&&m0.map?m0:null);
+  if(conMapa&&conMapa.map&&partes.length===1){
+    mat=new THREE.MeshStandardMaterial({map:conMapa.map,roughness:.9,metalness:0});
+  }
+
+  loadMeshGeometry(geo,mat);
+  MV.meshName=nombre;
+  const tris=Math.round((geo.index?geo.index.count:geo.attributes.position.count)/3);
+  toast(`${nombre} cargado · ${tris.toLocaleString()} tris`+(mat?'':conTextura?' (sin textura)':''));
+}
+
 $('glbFileBtn').addEventListener('click',()=>$('glbFi').click());
-$('glbFi').addEventListener('change',e=>{
-  const f=e.target.files[0];if(!f)return;
-  const rd=new FileReader();
-  rd.onload=()=>loadGLBBuffer(rd.result,f.name);
-  rd.onerror=()=>toast('No se pudo leer el archivo');
-  rd.readAsArrayBuffer(f);
-  e.target.value='';
-});
+$('glbFi').addEventListener('change',e=>{cargarArchivos(e.target.files);e.target.value='';});
 $('glbPcBtn').addEventListener('click',loadMeshFromPC);
 $('demoBtn').addEventListener('click',loadDemoTerrain);
 function updateMeshInfo(){if(!MV.mesh)return;const tri=MV.mesh.geometry.index?MV.mesh.geometry.index.count/3:MV.mesh.geometry.attributes.position.count/3;$('meshInfo').textContent=Math.round(tri).toLocaleString()+' triángulos';}
@@ -1676,7 +1789,28 @@ $('wfBtn')&&$('wfBtn').addEventListener('click',()=>{
   toast(MV.wireOn?'Topología visible':'Topología oculta');
 });
 
-$('meshApprove')&&$('meshApprove').addEventListener('click',()=>{if(!MV.mesh){toast('No hay mesh');return;}toast('Mesh aprobado — listo para Unity');});
+$('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
+  if(!MV.mesh){toast('No hay mesh');return;}
+  if(!S.ip){toast('Conecta al PC en Ajustes');return;}
+  if(!MV.archivos||!MV.archivos.length){
+    toast('Carga el mesh desde el dispositivo para poder enviarlo');return;
+  }
+  const nombre=curLevelName()||'nivel_01';
+  const btn=$('meshApprove');const txt=btn.textContent;
+  btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    const fd=new FormData();
+    fd.append('name',nombre);
+    MV.archivos.forEach((f,i)=>fd.append('f'+i,f,f.name));
+    const r=await fetch(`${srvURL()}/push-mesh`,{method:'POST',body:fd,signal:AbortSignal.timeout(180000)});
+    if(r.ok){
+      const d=await r.json();
+      btn.textContent='Enviado';
+      toast(`Mesh en Unity como ${nombre} (${d.files.length} archivos)`);
+      setTimeout(()=>{btn.textContent=txt;btn.disabled=false;},2500);
+    }else{btn.textContent=txt;btn.disabled=false;toast('Error al enviar');}
+  }catch(e){btn.textContent=txt;btn.disabled=false;toast('Sin conexión al PC');}
+});
 
 // SCAN
 const ANG=[{n:'Vista frontal',h:'Enfrenta la cámara',d:6},{n:'Lado derecho',h:'Gira 45° derecha',d:5},{n:'Perfil derecho',h:'Hasta el lado derecho',d:5},{n:'Trasera',h:'Pasa por detrás',d:6},{n:'Perfil izquierdo',h:'Al lado izquierdo',d:5},{n:'Lado izquierdo',h:'Casi al frente',d:5},{n:'Superior',h:'Eleva y mira abajo',d:6},{n:'Ángulo bajo',h:'Baja, apunta arriba',d:6}];
