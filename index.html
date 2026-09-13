@@ -205,39 +205,6 @@ header{
 .send:disabled{opacity:.3;}
 
 /* ═══ SCAN VIEW ═══ */
-#scanView{background:#000;}
-.scan-view{flex:1;position:relative;overflow:hidden;background:#000;}
-#scanVid{width:100%;height:100%;object-fit:cover;display:block;}
-.scan-ov{position:absolute;inset:0;pointer-events:none;}
-.scan-frame{position:absolute;inset:24px;border:2px solid rgba(232,220,196,.25);border-radius:18px;}
-.scan-ang{position:absolute;top:24px;left:50%;transform:translateX(-50%);background:rgba(13,11,9,.75);backdrop-filter:blur(10px);border:1px solid var(--border2);border-radius:22px;padding:9px 20px;text-align:center;}
-.scan-ang-l{font-size:11px;color:var(--text-mid);margin-bottom:2px;}
-.scan-ang-n{font-size:15px;font-weight:700;color:var(--cream);}
-.scan-prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(232,220,196,.12);}
-.scan-prog-f{height:100%;background:var(--accent);transition:width .25s;width:0;}
-.shutter-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
-.rec.shutter{background:var(--cream);border-color:var(--accent);}
-.rec.shutter .ric{width:44px;height:44px;background:var(--accent);border-radius:50%;}
-.rec.paused{background:var(--sage);}
-.rec.paused .ric{width:0;height:0;background:transparent;border-radius:0;border-left:18px solid var(--cream);border-top:12px solid transparent;border-bottom:12px solid transparent;margin-left:5px;}
-.scan-ctrl{padding:18px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
-.mode-switch{display:flex;gap:5px;margin-bottom:13px;}
-.mode-opt{flex:1;text-align:center;font-size:11px;font-weight:600;padding:7px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text-mid);cursor:pointer;}
-.mode-opt.on{border-color:var(--accent);color:var(--accent);}
-.photo-info{display:flex;flex-direction:column;align-items:center;gap:3px;margin-bottom:11px;}
-.photo-info #photoCount{font-size:15px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono';}
-.photo-hint{font-size:10px;color:var(--text-dim);}
-.scan-dots{display:flex;gap:6px;justify-content:center;margin-bottom:13px;flex-wrap:wrap;}
-.scan-dots i{width:9px;height:9px;border-radius:50%;background:var(--border2);transition:background .25s;}
-.scan-dots i.done{background:var(--sage);}
-.scan-dots i.now{background:var(--accent);box-shadow:0 0 6px var(--accent);}
-.scan-st{text-align:center;font-size:12px;color:var(--text-mid);margin-bottom:14px;min-height:18px;}
-.scan-row{display:flex;gap:12px;justify-content:center;align-items:center;}
-.rec{width:66px;height:66px;border-radius:50%;border:3px solid var(--cream);background:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.rec .ric{width:26px;height:26px;border-radius:50%;background:var(--cream);transition:all .2s;}
-.rec.on .ric{border-radius:5px;width:22px;height:22px;}
-.scan-side{padding:11px 18px;border-radius:11px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-mid);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:none;}
-.scan-side.show{display:block;}
 
 
 
@@ -271,6 +238,8 @@ header{
 .wf-toggle svg{width:17px;height:17px;}
 .mesh-stage{flex:1;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 40%,#1a1611,#0a0907);touch-action:none;}
 .mesh-stage canvas{display:block;}
+.gest-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(13,11,9,.8);border:1px solid var(--border2);color:var(--text-mid);font-size:10px;padding:5px 13px;border-radius:20px;pointer-events:none;opacity:0;transition:opacity .4s;z-index:5;white-space:nowrap;}
+.gest-hint.show{opacity:1;}
 .mesh-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-dim);pointer-events:none;}
 .mesh-empty svg{width:48px;height:48px;color:var(--border2);}
 .mesh-demo-btn{pointer-events:auto;margin-top:14px;font-size:12px;font-weight:600;padding:9px 18px;border-radius:9px;border:1px solid var(--accent);background:rgba(224,140,74,.1);color:var(--accent);cursor:pointer;font-family:inherit;}
@@ -313,42 +282,6 @@ header{
 .console-clear:active{color:var(--red);}
 
 
-/* PROCESADO */
-.proc-box{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
-.proc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
-.proc-title{font-size:12px;font-weight:600;color:var(--cream);}
-.proc-cfg{width:28px;height:28px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.proc-cfg.on{border-color:var(--accent);color:var(--accent);}
-.proc-cfg svg{width:14px;height:14px;}
-.proc-cfg-panel{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:10px;}
-.proc-presets{display:flex;gap:4px;margin-bottom:11px;}
-.pset{flex:1;text-align:center;font-size:10px;font-weight:600;padding:6px 2px;border-radius:7px;background:var(--bg);border:1px solid var(--border);color:var(--text-mid);cursor:pointer;}
-.pset.on{border-color:var(--accent);color:var(--accent);}
-.sw{position:relative;display:inline-block;width:34px;height:19px;flex-shrink:0;}
-.sw input{opacity:0;width:0;height:0;}
-.sw i{position:absolute;inset:0;background:var(--surface3);border-radius:19px;transition:.2s;}
-.sw i:before{content:"";position:absolute;width:13px;height:13px;left:3px;top:3px;background:var(--text-mid);border-radius:50%;transition:.2s;}
-.sw input:checked + i{background:rgba(224,140,74,.3);}
-.sw input:checked + i:before{transform:translateX(15px);background:var(--accent);}
-.proc-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
-.proc-row:last-child{margin-bottom:0;}
-.proc-row span{font-size:10px;color:var(--text-mid);width:82px;flex-shrink:0;}
-.proc-row input{flex:1;accent-color:var(--accent);height:5px;}
-.proc-row b{font-size:10px;color:var(--accent);font-family:'JetBrains Mono';width:34px;text-align:right;}
-.proc-sel{font-size:10px;color:var(--accent);font-family:'JetBrains Mono';text-align:center;margin-bottom:8px;min-height:13px;}
-.proc-status{font-size:11px;color:var(--text-mid);text-align:center;margin-bottom:10px;min-height:16px;}
-.proc-status.work{color:var(--accent);}
-.proc-status.ok{color:var(--sage);}
-.proc-status.err{color:var(--red);}
-.proc-log{background:#0a0907;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;max-height:220px;overflow-y:auto;font-family:'JetBrains Mono';font-size:9px;line-height:1.6;color:var(--text-dim);}
-.proc-bar{position:relative;height:20px;background:var(--surface3);border-radius:10px;overflow:hidden;margin-bottom:10px;}
-.proc-bar-f{height:100%;background:linear-gradient(90deg,var(--accent-soft),var(--accent));width:0;transition:width .5s ease;border-radius:10px;}
-.proc-bar-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono';color:var(--cream);text-shadow:0 1px 3px rgba(0,0,0,.7);}
-.proc-stop{flex:0 0 auto;padding:11px 18px;border-radius:10px;border:1px solid var(--red);background:rgba(212,89,58,.12);color:var(--red);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
-.proc-stop:active{transform:scale(.97);}
-.proc-go{flex:1;width:100%;padding:11px;border-radius:10px;border:1px solid var(--accent);background:rgba(224,140,74,.12);color:var(--accent);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
-.proc-go:active{transform:scale(.98);}
-.proc-go:disabled{opacity:.45;}
 
 /* ─── TAB BAR ─── */
 .tabbar{display:flex;height:var(--tabbar-h);background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);}
@@ -395,7 +328,6 @@ header{
 .li{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;cursor:pointer;}
 .li:active{background:var(--surface2);}
 .li.on{background:var(--surface2);border-left:2px solid var(--accent);}
-.scan-thumb{width:54px;height:40px;object-fit:cover;border-radius:6px;background:var(--surface3);flex-shrink:0;}
 .li-ic{flex-shrink:0;color:var(--text-mid);display:flex;}
 .li-info{flex:1;min-width:0;}
 .li-t{font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;}
@@ -603,11 +535,13 @@ header{
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="wf-toggle" id="glbFileBtn" title="Cargar mesh del dispositivo (ZIP, GLB, OBJ, USDZ)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg></button>
         <button class="wf-toggle" id="glbPcBtn" title="Recibir mesh del PC"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>
+        <button class="wf-toggle" id="recenterBtn" title="Recentrar vista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
         <button class="wf-toggle" id="wfBtn" title="Ver topología"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
       <button class="mesh-approve" id="meshApprove">Aprobar → Unity</button>
       </div>
     </div>
     <div class="mesh-stage" id="meshStage">
+      <div class="gest-hint" id="gestHint">1 dedo gira · 2 dedos mueven y hacen zoom</div>
       <div class="mesh-empty" id="meshEmpty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
         <div class="mesh-empty-t">Sin mesh cargado</div>
@@ -623,7 +557,7 @@ header{
       </div>
       <div class="mesh-ctrls" id="mCrop">
         <label>Altura corte base <span id="cropVal">0%</span></label>
-        <input type="range" id="cropSlider" min="0" max="40" value="0">
+        <input type="range" id="cropSlider" min="0" max="90" value="0">
       </div>
       <div class="mesh-ctrls" id="mTransform" style="display:none;">
         <div class="mesh-btns">
@@ -642,70 +576,7 @@ header{
     </div>
   </div>
 
-  <!-- SCAN -->
-  <div class="view" id="scanView">
-    <div class="scan-view">
-      <video id="scanVid" autoplay playsinline muted></video>
-      <div class="scan-ov">
-        <div class="scan-frame"></div>
-        <div class="scan-ang"><div class="scan-ang-l">Ángulo actual</div><div class="scan-ang-n" id="scanAngN">Listo para empezar</div></div>
-        <div class="scan-prog"><div class="scan-prog-f" id="scanProgF"></div></div>
-        <div class="shutter-flash" id="shutterFlash"></div>
-      </div>
-    </div>
-    <div class="scan-ctrl">
-      <div class="mode-switch">
-        <div class="mode-opt on" data-mode="video">Vídeo</div>
-        <div class="mode-opt" data-mode="photo">Ráfaga</div>
-        <div class="mode-opt" data-mode="manual">Manual</div>
-      </div>
-      <div class="scan-dots" id="scanDots"></div>
-      <div class="scan-st" id="scanSt">Pulsa grabar para el escaneado guiado</div>
-      <div class="photo-info" id="photoInfo" style="display:none;">
-        <span id="photoCount">0 fotos</span>
-        <span class="photo-hint" id="photoHint">Gira despacio alrededor del objeto</span>
-      </div>
-      <div class="scan-row">
-        <button class="scan-side" id="scanSend">Enviar al PC</button>
-        <div class="rec" id="recBtn"><div class="ric"></div></div>
-        <button class="scan-side" id="scanUndo" style="display:none;">Deshacer</button>
-        <button class="scan-side" id="scanReset" style="display:none;">Reiniciar</button>
-      </div>
-      <div class="proc-box" id="procBox">
-        <div class="proc-head">
-          <span class="proc-title" id="procTitle">Procesar en el PC</span>
-          <div style="display:flex;gap:6px;">
-          <button class="proc-cfg" id="scansBtn" title="Librería de scans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.5V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.5"/><path d="M2 8.5 4.5 4h15L22 8.5H2z"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
-          <button class="proc-cfg" id="procCfgBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
-          </div>
-        </div>
-        <div class="proc-cfg-panel" id="procCfg" style="display:none;">
-          <div class="proc-presets">
-            <div class="pset" data-preset="rapido">Rápido</div>
-            <div class="pset on" data-preset="normal">Normal</div>
-            <div class="pset" data-preset="bueno">Bueno</div>
-            <div class="pset" data-preset="">Manual</div>
-          </div>
-          <div class="proc-row"><span>Fotogramas/s</span><input type="range" id="procFps" min="1" max="6" step="1" value="3"><b id="procFpsV">3</b></div>
-          <div class="proc-row"><span>Criba borrosos</span><input type="range" id="procNit" min="0" max="90" step="5" value="55"><b id="procNitV">55%</b></div>
-          <div class="proc-row"><span>Triángulos</span><input type="range" id="procTris" min="10" max="200" step="10" value="50"><b id="procTrisV">50k</b></div>
-          <div class="proc-row" style="margin-top:9px;"><span>Aislar objeto</span><label class="sw"><input type="checkbox" id="procMask"><i></i></label><b id="procMaskV">no</b></div>
-          <div class="proc-row"><span>Limpiar malla</span><label class="sw"><input type="checkbox" id="procClean" checked><i></i></label><b id="procCleanV">sí</b></div>
-        </div>
-        <div class="proc-sel" id="procSel"></div>
-        <div class="proc-status" id="procStatus">Envía un scan y púlsalo para reconstruir en 3D</div>
-        <div class="proc-bar" id="procBar" style="display:none;">
-          <div class="proc-bar-f" id="procBarF"></div>
-          <span class="proc-bar-pct" id="procBarPct">0%</span>
-        </div>
-        <div class="proc-log" id="procLog" style="display:none;"></div>
-        <div style="display:flex;gap:8px;">
-          <button class="proc-stop" id="procStop" style="display:none;">Cancelar</button>
-          <button class="proc-go" id="procGo">Procesar último scan</button>
-        </div>
-      </div>
-    </div>
-  </div>
+
 </div>
 
 <!-- TAB BAR -->
@@ -726,11 +597,7 @@ header{
     <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
     <span class="tab-l">Mesh</span>
   </div>
-  <div class="tab" data-tab="scan">
-    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    <span class="tab-l">Scan</span>
   </div>
-</div>
 
 <!-- MODALS -->
 <div class="ov hide" id="jsonOv"><div class="sheet lg">
@@ -745,11 +612,6 @@ header{
   <div class="sheet-h"><span class="sheet-t">Mis niveles</span><button class="sheet-x" id="lvlX">×</button></div>
   <div class="list" id="lvlList"></div>
   <div style="display:flex;gap:8px;"><button class="act" id="lvlDup">Duplicar actual</button><button class="act p" id="lvlNew" style="flex:1.4;">+ Nuevo nivel</button></div>
-</div></div>
-
-<div class="ov hide" id="scansOv"><div class="sheet lg">
-  <div class="sheet-h"><span class="sheet-t">Scans en el PC</span><button class="sheet-x" id="scansX">×</button></div>
-  <div class="list" id="scansList"></div>
 </div></div>
 
 <div class="ov hide" id="scaleOv"><div class="sheet sm">
@@ -847,7 +709,6 @@ function switchTab(t){
   $(t+'View').classList.add('active');
   ['jsonBtn','saveBtn','undoBtn'].forEach(b=>{const el=$(b);if(el)el.style.display=t==='level'?'':'none';});
   if(t==='level')resize();
-  if(t==='scan'){startCam();checkProcOnOpen();}else stopCam();
   if(t==='scripts')renderScripts();
   if(t==='mesh'){initMeshViewer();setTimeout(resizeMeshViewer,50);}
 }
@@ -1337,148 +1198,7 @@ async function send(){const text=intext.value.trim();if(!text)return;intext.valu
 
 
 
-// ─── LIBRERÍA DE SCANS ──────────────────────────────────────────────────────
-let scans=[],scanSel=null;
-function fechaCorta(ts){
-  const d=new Date(ts*1000),hoy=new Date();
-  const mismo=d.toDateString()===hoy.toDateString();
-  const hh=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-  if(mismo)return 'hoy '+hh;
-  return d.getDate()+'/'+(d.getMonth()+1)+' '+hh;
-}
-async function loadScans(){
-  const el=$('scansList');
-  if(!S.ip){el.innerHTML='<div class="empty">Conecta al PC en Ajustes</div>';return;}
-  el.innerHTML='<div class="empty">Cargando...</div>';
-  try{
-    const r=await fetch(`${srvURL()}/scans`,{signal:AbortSignal.timeout(8000)});
-    if(!r.ok)throw 0;
-    scans=(await r.json()).scans||[];
-  }catch(e){el.innerHTML='<div class="empty">Sin conexión al PC</div>';return;}
-  if(!scans.length){el.innerHTML='<div class="empty">Todavía no has enviado ningún scan</div>';return;}
-  el.innerHTML=scans.map((s,i)=>{const tipo=s.kind==='photo'?`${s.count} fotos`:'vídeo';return `<div class="li ${s.name===scanSel?'on':''}" data-i="${i}"><img class="scan-thumb" src="${srvURL()}/scan/thumb?name=${encodeURIComponent(s.name)}" onerror="this.style.visibility='hidden'"><div class="li-info"><div class="li-t">${esc(s.name)}</div><div class="li-s">${tipo} · ${s.size} · ${fechaCorta(s.mtime)}</div></div></div>`;}).join('');
-  el.querySelectorAll('.li').forEach(d=>d.addEventListener('click',()=>{
-    scanSel=scans[+d.dataset.i].name;
-    updateScanSel();
-    $('scansOv').classList.add('hide');
-  }));
-}
-function updateScanSel(){
-  $('procSel').textContent=scanSel?scanSel:'';
-  $('procGo').textContent=scanSel?'Procesar este scan':'Procesar último scan';
-}
-$('scansBtn').addEventListener('click',()=>{loadScans();$('scansOv').classList.remove('hide');});
-$('scansX').addEventListener('click',()=>$('scansOv').classList.add('hide'));
 
-// ─── PROCESADO EN EL PC ─────────────────────────────────────────────────────
-let procPoll=null;
-$('procCfgBtn').addEventListener('click',()=>{
-  const p=$('procCfg'),open=p.style.display==='none';
-  p.style.display=open?'block':'none';
-  $('procCfgBtn').classList.toggle('on',open);
-});
-let procPreset='normal';
-const PRESET_VALS={rapido:[1,20,45],normal:[3,50,55],bueno:[5,120,60]};
-document.querySelectorAll('.pset').forEach(p=>p.addEventListener('click',()=>{
-  procPreset=p.dataset.preset;
-  document.querySelectorAll('.pset').forEach(x=>x.classList.toggle('on',x===p));
-  const v=PRESET_VALS[procPreset];
-  if(v){$('procFps').value=v[0];$('procFpsV').textContent=v[0];
-        $('procTris').value=v[1];$('procTrisV').textContent=v[1]+'k';
-        $('procNit').value=v[2];$('procNitV').textContent=v[2]+'%';}
-}));
-function manualSiTocado(){procPreset='';document.querySelectorAll('.pset').forEach(x=>x.classList.toggle('on',x.dataset.preset===''));}
-$('procMask').addEventListener('change',e=>$('procMaskV').textContent=e.target.checked?'sí':'no');
-$('procClean').addEventListener('change',e=>$('procCleanV').textContent=e.target.checked?'sí':'no');
-$('procFps').addEventListener('input',manualSiTocado);
-$('procTris').addEventListener('input',manualSiTocado);
-$('procNit').addEventListener('input',manualSiTocado);
-$('procFps').addEventListener('input',e=>$('procFpsV').textContent=e.target.value);
-$('procNit').addEventListener('input',e=>$('procNitV').textContent=e.target.value+'%');
-$('procTris').addEventListener('input',e=>$('procTrisV').textContent=e.target.value+'k');
-
-function procSet(txt,cls){const el=$('procStatus');el.textContent=txt;el.className='proc-status'+(cls?' '+cls:'');}
-
-$('procGo').addEventListener('click',async()=>{
-  if(!S.ip){toast('Conecta al PC en Ajustes');return;}
-  $('procGo').disabled=true;
-  procSet('Lanzando...','work');
-  try{
-    const r=await fetch(`${srvURL()}/process`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({video:scanSel||'',preset:procPreset||'',mascara:$('procMask').checked,limpiar:$('procClean').checked,fps:+$('procFps').value,tris:+$('procTris').value*1000,nitidez:+$('procNit').value/100}),
-      signal:AbortSignal.timeout(15000)});
-    const d=await r.json();
-    if(!r.ok){procSet(d.error||'No se pudo lanzar','err');$('procGo').disabled=false;return;}
-    procSet('Procesando '+d.video,'work');
-    $('procLog').style.display='block';
-    $('procBar').style.display='block';
-    $('procBarF').style.width='1%';$('procBarPct').textContent='1%';
-    $('procStop').style.display='block';
-    startProcPoll();
-  }catch(e){procSet('Sin conexión al PC','err');$('procGo').disabled=false;}
-});
-
-$('procStop').addEventListener('click',async()=>{
-  if(!confirm('¿Cancelar el procesado? Se perderá el trabajo hecho.'))return;
-  $('procStop').disabled=true;
-  procSet('Cancelando...','work');
-  try{
-    await fetch(`${srvURL()}/process/cancel`,{method:'POST',signal:AbortSignal.timeout(10000)});
-    toast('Procesado cancelado');
-  }catch(e){toast('No se pudo cancelar');}
-  $('procStop').disabled=false;
-});
-
-let procGrace=0;
-function startProcPoll(){if(procPoll)return;procGrace=Date.now()+12000;pollProc();procPoll=setInterval(pollProc,3000);}
-function stopProcPoll(){clearInterval(procPoll);procPoll=null;}
-
-async function pollProc(){
-  if(!S.ip)return;
-  try{
-    const r=await fetch(`${srvURL()}/process/status`,{signal:AbortSignal.timeout(6000)});
-    if(!r.ok)return;
-    const d=await r.json();
-    if(d.log&&d.log.length){
-      const el=$('procLog');
-      el.style.display='block';
-      el.innerHTML=d.log.map(l=>`<div>${esc(l)}</div>`).join('');
-      el.scrollTop=el.scrollHeight;
-    }
-    if(d.activo){
-      $('procGo').disabled=true;
-      $('procStop').style.display='block';
-      $('procBar').style.display='block';
-      const pct=Math.max(1,Math.min(100,d.pct||0));
-      $('procBarF').style.width=pct+'%';
-      $('procBarPct').textContent=pct+'%';
-      let txt=d.fase;
-      if(d.nodo)txt+=` ${d.nodo}/${d.nodos}`;
-      if(d.detalle)txt+=' · '+d.detalle;
-      procSet(`${txt} · ${d.min} min`,'work');
-    }else if(Date.now()<procGrace&&!d.error&&!d.resultado){
-      // Recién lanzado: el servidor puede tardar un instante en reflejarlo
-      $('procGo').disabled=true;
-      $('procStop').style.display='block';
-      procSet('Arrancando...','work');
-    }else{
-      stopProcPoll();
-      $('procGo').disabled=false;
-      $('procStop').style.display='none';
-      if(d.error){procSet('Error: '+d.error.slice(0,90),'err');$('procBar').style.display='none';}
-      else if(d.fase==='Cancelado'){procSet('Cancelado','');$('procBar').style.display='none';}
-      else if(d.resultado){
-        $('procBarF').style.width='100%';$('procBarPct').textContent='100%';
-        procSet('Listo: '+d.resultado,'ok');
-        toast('Mesh listo — ábrelo en la pestaña Mesh');
-      }else if(d.fase){procSet(d.fase,'');$('procBar').style.display='none';}
-    }
-  }catch(e){}
-}
-
-// Si había un procesado en marcha al abrir la pestaña, engancharse
-function checkProcOnOpen(){if(S.ip&&S.conn)pollProc();}
 
 // ─── MESH VIEWER (three.js) ───
 const MV={scene:null,camera:null,renderer:null,mesh:null,origGeo:null,raf:null,rotY:0,rotX:.4,dist:3,crop:0,scale:1,rotZ:0};
@@ -1494,18 +1214,94 @@ function initMeshViewer(){
   const a=new THREE.AmbientLight(0xffffff,.7);MV.scene.add(a);
   const d=new THREE.DirectionalLight(0xffe8c4,1.1);d.position.set(2,4,3);MV.scene.add(d);
   const d2=new THREE.DirectionalLight(0x88aacc,.4);d2.position.set(-3,1,-2);MV.scene.add(d2);
-  // gesture controls
-  let px,py,pinch0;const el=MV.renderer.domElement;
-  let mpts={};
-  el.addEventListener('pointerdown',e=>{mpts[e.pointerId]={x:e.clientX,y:e.clientY};px=e.clientX;py=e.clientY;});
-  el.addEventListener('pointermove',e=>{
-    if(!mpts[e.pointerId])return;mpts[e.pointerId]={x:e.clientX,y:e.clientY};const k=Object.keys(mpts);
-    if(k.length>=2){const a=mpts[k[0]],b=mpts[k[1]],dd=Math.hypot(a.x-b.x,a.y-b.y);if(pinch0){MV.dist=Math.max(.5,Math.min(15,MV.dist*(pinch0/dd)));}pinch0=dd;return;}
-    pinch0=0;MV.rotY+=(e.clientX-px)*.01;MV.rotX+=(e.clientY-py)*.01;MV.rotX=Math.max(-1.4,Math.min(1.4,MV.rotX));px=e.clientX;py=e.clientY;
+  // ── Gestos: 1 dedo orbita · 2 dedos desplazan y hacen zoom ──────────────
+  const el=MV.renderer.domElement;
+  el.style.touchAction='none';
+  let mpts={}, pinch0=0, mid0=null;
+  MV.target=new THREE.Vector3(0,0,0);   // punto al que mira la cámara
+
+  function centroPts(k){
+    const a=mpts[k[0]],b=mpts[k[1]];
+    return {x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+  }
+
+  el.addEventListener('pointerdown',e=>{
+    el.setPointerCapture&&el.setPointerCapture(e.pointerId);
+    mpts[e.pointerId]={x:e.clientX,y:e.clientY};
+    const k=Object.keys(mpts);
+    if(k.length===2){
+      const a=mpts[k[0]],b=mpts[k[1]];
+      pinch0=Math.hypot(a.x-b.x,a.y-b.y);
+      mid0=centroPts(k);
+    }
   });
-  el.addEventListener('pointerup',e=>{delete mpts[e.pointerId];pinch0=0;});
-  el.addEventListener('pointercancel',e=>{delete mpts[e.pointerId];pinch0=0;});
-  function loop(){MV.raf=requestAnimationFrame(loop);if(MV.mesh){const r=MV.dist;MV.camera.position.set(Math.sin(MV.rotY)*Math.cos(MV.rotX)*r,Math.sin(MV.rotX)*r,Math.cos(MV.rotY)*Math.cos(MV.rotX)*r);MV.camera.lookAt(0,0,0);}MV.renderer.render(MV.scene,MV.camera);}
+
+  el.addEventListener('pointermove',e=>{
+    const p=mpts[e.pointerId];
+    if(!p)return;
+    const dx=e.clientX-p.x, dy=e.clientY-p.y;
+    mpts[e.pointerId]={x:e.clientX,y:e.clientY};
+    const k=Object.keys(mpts);
+
+    if(k.length>=2){
+      const a=mpts[k[0]],b=mpts[k[1]];
+      const dd=Math.hypot(a.x-b.x,a.y-b.y);
+      // Zoom por pellizco
+      if(pinch0>0&&dd>0){
+        MV.dist=Math.max(.4,Math.min(25,MV.dist*(pinch0/dd)));
+      }
+      pinch0=dd;
+      // Desplazar: mover los dos dedos juntos arrastra la vista
+      const mid=centroPts(k);
+      if(mid0){
+        const mdx=mid.x-mid0.x, mdy=mid.y-mid0.y;
+        if(Math.abs(mdx)>0.1||Math.abs(mdy)>0.1){
+          const f=MV.dist*0.0022;
+          // Desplazamiento en el plano de la cámara, no en ejes del mundo
+          const der=new THREE.Vector3(), arr=new THREE.Vector3();
+          MV.camera.matrixWorld.extractBasis(der,arr,new THREE.Vector3());
+          MV.target.addScaledVector(der,-mdx*f);
+          MV.target.addScaledVector(arr, mdy*f);
+        }
+      }
+      mid0=mid;
+      return;
+    }
+
+    // Un dedo: orbitar. Velocidad proporcional al tamaño de pantalla,
+    // así el gesto se siente igual en cualquier móvil.
+    pinch0=0;mid0=null;
+    const v=2.6/Math.max(el.clientWidth,1);
+    MV.rotY-=dx*v;
+    MV.rotX-=dy*v;
+    MV.rotX=Math.max(-1.45,Math.min(1.45,MV.rotX));
+  });
+
+  function soltar(e){
+    delete mpts[e.pointerId];
+    const k=Object.keys(mpts);
+    if(k.length<2){pinch0=0;mid0=null;}
+  }
+  el.addEventListener('pointerup',soltar);
+  el.addEventListener('pointercancel',soltar);
+  el.addEventListener('pointerleave',soltar);
+
+  // Rueda del ratón para probar en escritorio
+  el.addEventListener('wheel',e=>{
+    e.preventDefault();
+    MV.dist=Math.max(.4,Math.min(25,MV.dist*(e.deltaY>0?1.1:0.9)));
+  },{passive:false});
+
+  function loop(){
+    MV.raf=requestAnimationFrame(loop);
+    const r=MV.dist;
+    MV.camera.position.set(
+      MV.target.x+Math.sin(MV.rotY)*Math.cos(MV.rotX)*r,
+      MV.target.y+Math.sin(MV.rotX)*r,
+      MV.target.z+Math.cos(MV.rotY)*Math.cos(MV.rotX)*r);
+    MV.camera.lookAt(MV.target);
+    MV.renderer.render(MV.scene,MV.camera);
+  }
   loop();
 }
 function resizeMeshViewer(){if(!MV.renderer)return;const s=$('meshStage');MV.camera.aspect=s.clientWidth/s.clientHeight;MV.camera.updateProjectionMatrix();MV.renderer.setSize(s.clientWidth,s.clientHeight);}
@@ -1520,11 +1316,12 @@ function loadMeshGeometry(geo,mat){
   geo.computeBoundingBox();const sz=new THREE.Vector3();geo.boundingBox.getSize(sz);const mx=Math.max(sz.x,sz.y,sz.z);const sc=2/mx;geo.scale(sc,sc,sc);
   if(!mat)mat=new THREE.MeshStandardMaterial({color:0xc9a878,roughness:.85,metalness:.05});
   MV.mesh=new THREE.Mesh(geo,mat);MV.scene.add(MV.mesh);
-  MV.crop=0;MV.dist=3;
+  MV.crop=0;MV.dist=3;MV.rotX=.4;MV.rotY=0;if(MV.target)MV.target.set(0,0,0);
   const cs=$('cropSlider');if(cs){cs.value=0;$('cropVal').textContent='0%';}
   const ds=$('decSlider');if(ds){ds.value=100;$('decVal').textContent='100%';}
   const ss=$('scaleSlider');if(ss){ss.value=100;$('scaleVal').textContent='1.0×';}
   $('meshEmpty').style.display='none';$('meshTools').style.display='block';
+  pistaGestos();
   updateMeshInfo();
 }
 function stripGLBTextures(buf){
@@ -1764,6 +1561,19 @@ $('glbFileBtn').addEventListener('click',()=>$('glbFi').click());
 $('glbFi').addEventListener('change',e=>{cargarArchivos(e.target.files);e.target.value='';});
 $('glbPcBtn').addEventListener('click',loadMeshFromPC);
 $('demoBtn').addEventListener('click',loadDemoTerrain);
+$('recenterBtn')&&$('recenterBtn').addEventListener('click',()=>{
+  if(!MV.mesh){toast('No hay mesh');return;}
+  MV.rotX=.4;MV.rotY=0;MV.dist=3;
+  if(MV.target)MV.target.set(0,0,0);
+  toast('Vista recentrada');
+});
+let gestT=null;
+function pistaGestos(){
+  const h=$('gestHint');if(!h)return;
+  h.classList.add('show');
+  clearTimeout(gestT);
+  gestT=setTimeout(()=>h.classList.remove('show'),3500);
+}
 function updateMeshInfo(){if(!MV.mesh)return;const tri=MV.mesh.geometry.index?MV.mesh.geometry.index.count/3:MV.mesh.geometry.attributes.position.count/3;$('meshInfo').textContent=Math.round(tri).toLocaleString()+' triángulos';}
 
 // Demo: load a placeholder mesh so the viewer is testable before PC integration
@@ -1837,218 +1647,6 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
   }catch(e){btn.textContent=txt;btn.disabled=false;toast('Sin conexión al PC');}
 });
 
-// SCAN
-const ANG=[{n:'Vista frontal',h:'Enfrenta la cámara',d:6},{n:'Lado derecho',h:'Gira 45° derecha',d:5},{n:'Perfil derecho',h:'Hasta el lado derecho',d:5},{n:'Trasera',h:'Pasa por detrás',d:6},{n:'Perfil izquierdo',h:'Al lado izquierdo',d:5},{n:'Lado izquierdo',h:'Casi al frente',d:5},{n:'Superior',h:'Eleva y mira abajo',d:6},{n:'Ángulo bajo',h:'Baja, apunta arriba',d:6}];
-let stream=null,recorder=null,chunks=[],angI=0,scanT=null,blob=null,scanRec=0;
-// ─── MODO FOTO ──────────────────────────────────────────────────────────────
-// Las fotos dan mejor reconstrucción que el vídeo: sin compresión temporal,
-// sin artefactos de movimiento y con nitidez completa en cada disparo.
-let scanMode='video', photos=[], photoTimer=null, photoCanvas=null;
-const PHOTO_INTERVAL=900, PHOTO_TARGET=60;
-
-function resetCapture(){
-  photos=[];blob=null;
-  $('photoCount').textContent='0 fotos';
-  $('scanProgF').style.width='0';
-  $('scanSend').classList.remove('show');
-  $('scanReset').style.display='none';
-  $('scanUndo').style.display='none';
-  $('scanSend').textContent='Enviar al PC';
-}
-
-function capturarFoto(){
-  if(!stream)return;
-  const v=$('scanVid');
-  if(!v.videoWidth)return;
-  if(!photoCanvas)photoCanvas=document.createElement('canvas');
-  photoCanvas.width=v.videoWidth;photoCanvas.height=v.videoHeight;
-  photoCanvas.getContext('2d').drawImage(v,0,0);
-  photoCanvas.toBlob(b=>{
-    if(!b)return;
-    photos.push(b);
-    $('photoCount').textContent=photos.length+' fotos';
-    $('scanProgF').style.width=Math.min(100,photos.length/PHOTO_TARGET*100)+'%';
-    if(scanMode==='manual'){
-      $('scanSend').classList.add('show');
-      $('scanUndo').style.display='block';
-      $('scanReset').style.display='block';
-      $('scanSt').textContent=photos.length<25
-        ? `${photos.length} de ~40 · sigue dando la vuelta`
-        : `${photos.length} fotos · suficientes para reconstruir`;
-      flashFoto();
-    }else if(photos.length>=PHOTO_TARGET&&photoTimer){
-      $('photoHint').textContent='Ya tienes suficientes — puedes parar';
-    }
-  },'image/jpeg',0.94);
-}
-
-// Destello breve al disparar, para saber que la foto entró
-function flashFoto(){
-  const f=$('shutterFlash');
-  if(!f)return;
-  f.style.transition='none';f.style.opacity='0.55';
-  requestAnimationFrame(()=>{f.style.transition='opacity .28s';f.style.opacity='0';});
-}
-
-function tomarFotoManual(){
-  if(!stream){$('scanSt').textContent='Cámara no disponible';return;}
-  capturarFoto();
-}
-
-function deshacerFoto(){
-  if(!photos.length)return;
-  photos.pop();
-  $('photoCount').textContent=photos.length+' fotos';
-  $('scanProgF').style.width=Math.min(100,photos.length/PHOTO_TARGET*100)+'%';
-  $('scanSt').textContent=photos.length?`${photos.length} fotos`:'Sin fotos — pulsa para disparar';
-  if(!photos.length){
-    $('scanSend').classList.remove('show');
-    $('scanUndo').style.display='none';
-    $('scanReset').style.display='none';
-  }
-}
-
-function startPhotos(){
-  if(!stream){$('scanSt').textContent='Cámara no disponible';return;}
-  $('recBtn').classList.add('on');
-  $('recBtn').classList.remove('paused');
-  $('scanAngN').textContent=photos.length?'Reanudando':'Disparando';
-  $('scanSt').textContent='Gira despacio y de forma continua';
-  $('photoHint').textContent='Solápalas: cada foto comparte zona con la anterior';
-  $('scanSend').classList.remove('show');
-  capturarFoto();
-  photoTimer=setInterval(capturarFoto,PHOTO_INTERVAL);
-}
-
-function stopPhotos(){
-  clearInterval(photoTimer);photoTimer=null;
-  $('recBtn').classList.remove('on');
-  $('recBtn').classList.add('paused');
-  $('scanAngN').textContent='En pausa';
-  $('scanSt').textContent=photos.length+' fotos'+(photos.length<25?' — pocas, sigue girando':' · pulsa otra vez para seguir');
-  $('photoHint').textContent='Puedes recolocar el objeto y reanudar';
-  if(photos.length){
-    $('scanSend').classList.add('show');
-    $('scanReset').style.display='block';
-    $('scanUndo').style.display='block';
-  }
-}
-
-document.querySelectorAll('.mode-opt').forEach(m=>m.addEventListener('click',()=>{
-  if(scanRec||photoTimer){toast('Para la captura primero');return;}
-  scanMode=m.dataset.mode;
-  document.querySelectorAll('.mode-opt').forEach(x=>x.classList.toggle('on',x===m));
-  const esFoto=scanMode!=='video';
-  $('photoInfo').style.display=esFoto?'flex':'none';
-  $('scanDots').style.display=esFoto?'none':'flex';
-  $('recBtn').classList.toggle('shutter',scanMode==='manual');
-  startCam();
-  $('scanReset').style.display=scanMode==='video'?'none':'block';
-  if(scanMode==='manual'){
-    $('scanSt').textContent='Pulsa para tomar cada foto, una a una';
-    $('scanAngN').textContent='Foto manual';
-    $('photoHint').textContent='Da la vuelta al objeto solapando encuadres';
-  }else if(scanMode==='photo'){
-    $('scanSt').textContent='Pulsa el botón rojo para disparar en ráfaga';
-    $('scanAngN').textContent='Ráfaga';
-    $('photoHint').textContent='Gira despacio mientras dispara solo';
-  }else{
-    $('scanSt').textContent='Pulsa grabar para el escaneado guiado';
-    $('scanAngN').textContent='Listo para empezar';
-  }
-  resetCapture();
-}));
-
-
-function buildDots(){$('scanDots').innerHTML=ANG.map(()=>'<i></i>').join('');}
-buildDots();
-async function startCam(){
-  // Si ya hay stream pero el vídeo no lo está pintando, reengancharlo
-  if(stream){
-    const v=$('scanVid');
-    const vivo=stream.getVideoTracks().some(t=>t.readyState==='live');
-    if(vivo){
-      if(v.srcObject!==stream)v.srcObject=stream;
-      if(v.paused)v.play().catch(()=>{});
-      return;
-    }
-    stream.getTracks().forEach(t=>t.stop());stream=null;   // muerto: pedir uno nuevo
-  }
-  // 1. Contexto seguro: iOS solo expone la cámara en HTTPS (o localhost)
-  if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    $('scanSt').textContent='La cámara requiere HTTPS — abre la app desde su URL (GitHub Pages), no como archivo';
-    $('scanAngN').textContent='Cámara bloqueada';
-    return;
-  }
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
-    const v=$('scanVid');v.srcObject=stream;
-    try{await v.play();}catch(e){}
-    $('scanAngN').textContent='Listo para empezar';
-    $('scanSt').textContent='Pulsa grabar para el escaneado guiado';
-  }catch(e){
-    if(e.name==='NotAllowedError')$('scanSt').textContent='Permiso denegado — Ajustes > Safari > Cámara > Permitir';
-    else if(e.name==='NotFoundError')$('scanSt').textContent='No se encontró cámara trasera';
-    else if(e.name==='NotReadableError')$('scanSt').textContent='La cámara está en uso por otra app';
-    else $('scanSt').textContent='Error de cámara: '+e.name;
-    $('scanAngN').textContent='Sin cámara';
-  }
-}
-function stopCam(){
-  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;$('scanVid').srcObject=null;}
-}
-function startRec(){if(!stream){$('scanSt').textContent='Cámara no disponible';return;}chunks=[];angI=0;scanRec=1;$('recBtn').classList.add('on');$('scanSend').classList.remove('show');$('scanReset').style.display='none';blob=null;let mt='';for(const c of ['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm']){if(MediaRecorder.isTypeSupported(c)){mt=c;break;}}
-  try{recorder=new MediaRecorder(stream,mt?{mimeType:mt,videoBitsPerSecond:12000000}:{videoBitsPerSecond:12000000});}
-  catch(e){recorder=new MediaRecorder(stream);}recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};recorder.onstop=()=>{blob=new Blob(chunks,{type:recorder.mimeType});$('scanSt').textContent=`Completo · ${(blob.size/1048576).toFixed(1)}MB`;$('scanSend').classList.add('show');$('scanReset').style.display='block';$('scanProgF').style.width='100%';};recorder.start(1000);guide();}
-function guide(){if(angI>=ANG.length){stopRec();return;}const a=ANG[angI];$('scanAngN').textContent=a.n;$('scanSt').textContent=a.h;document.querySelectorAll('.scan-dots i').forEach((d,j)=>d.className=j<angI?'done':j===angI?'now':'');const tot=ANG.reduce((s,x)=>s+x.d,0),dn=ANG.slice(0,angI).reduce((s,x)=>s+x.d,0);let el=0;scanT=setInterval(()=>{el+=.1;$('scanProgF').style.width=((dn+el)/tot*100)+'%';if(el>=a.d){clearInterval(scanT);angI++;guide();}},100);}
-function stopRec(){clearInterval(scanT);scanRec=0;$('recBtn').classList.remove('on');$('scanAngN').textContent='Procesando...';if(recorder&&recorder.state!=='inactive')recorder.stop();}
-$('recBtn').addEventListener('click',()=>{
-  if(scanMode==='manual')tomarFotoManual();
-  else if(scanMode==='photo')photoTimer?stopPhotos():startPhotos();
-  else scanRec?stopRec():startRec();
-});
-$('scanUndo').addEventListener('click',deshacerFoto);
-$('scanReset').addEventListener('click',()=>{
-  if((photos.length>3||blob)&&!confirm('¿Descartar la captura y empezar de cero?'))return;
-  if(photoTimer){clearInterval(photoTimer);photoTimer=null;}
-  if(scanRec)stopRec();
-  resetCapture();
-  buildDots();
-  $('recBtn').classList.remove('on','paused');
-  if(scanMode==='manual'){$('scanSt').textContent='Pulsa para tomar cada foto, una a una';$('scanAngN').textContent='Foto manual';}
-  else if(scanMode==='photo'){$('scanSt').textContent='Pulsa el botón rojo para disparar en ráfaga';$('scanAngN').textContent='Ráfaga';}
-  else{$('scanSt').textContent='Pulsa grabar para el escaneado guiado';$('scanAngN').textContent='Listo para empezar';}
-  toast('Captura reiniciada');
-});
-$('scanSend').addEventListener('click',async()=>{
-  if(!S.ip){toast('Conecta al PC en Ajustes');return;}
-  const esFoto=scanMode!=='video';
-  if(esFoto&&!photos.length){toast('No hay fotos');return;}
-  if(!esFoto&&!blob){toast('No hay grabación');return;}
-  $('scanSend').textContent='Enviando...';
-  try{
-    const fd=new FormData();
-    if(esFoto){
-      photos.forEach((b,i)=>fd.append('photo_'+String(i).padStart(4,'0'),b,'foto_'+String(i+1).padStart(4,'0')+'.jpg'));
-      fd.append('mode','photo');
-    }else{
-      const ext=(recorder&&recorder.mimeType&&recorder.mimeType.includes('webm'))?'webm':'mp4';
-      fd.append('video',blob,'scan.'+ext);
-      fd.append('mode','video');
-    }
-    const r=await fetch(`${srvURL()}/scan`,{method:'POST',body:fd,signal:AbortSignal.timeout(300000)});
-    if(r.ok){
-      $('scanSend').textContent='Enviado';
-      toast(esFoto?photos.length+' fotos en el PC':'Vídeo en el PC');
-      procSet('Recibido. Pulsa Procesar para reconstruir','ok');
-      scanSel=null;updateScanSel();loadScans();
-    }else{$('scanSend').textContent='Enviar al PC';toast('Error al enviar');}
-  }catch(e){$('scanSend').textContent='Enviar al PC';toast('Error de conexión');}
-});
-
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden&&document.querySelector('.tab.on')?.dataset.tab==='scan')startCam();
-});
 
 // INIT
 initGrass();resize();fit();render();loadCustom();loadConns();
