@@ -603,6 +603,7 @@ header{
       <div class="tip" id="tip">Carga un mapa o coloca objetos</div>
       <div class="statusbar" id="statusbar" style="position:absolute;bottom:0;left:0;right:0;z-index:15;">
         <div class="chips" id="chips"></div>
+        <button class="maptrig" id="escObjBtn">Tamaño objs</button>
         <button class="maptrig" id="view3dBtn">Vista 3D</button>
         <button class="maptrig" id="scaleTrig">Escala</button>
         <button class="maptrig" id="mapTrig">Mapa</button>
@@ -734,6 +735,15 @@ header{
   <div style="display:flex;gap:8px;"><button class="act" id="lvlDup">Duplicar actual</button><button class="act p" id="lvlNew" style="flex:1.4;">+ Nuevo nivel</button></div>
 </div></div>
 
+<div class="ov hide" id="escObjOv"><div class="sheet sm">
+  <div class="sheet-h"><span class="sheet-t">Tamaño de los objetos</span><button class="sheet-x" id="escObjX">×</button></div>
+  <div class="col">
+    <div class="hint">Los prefabs vienen en la escala de Unity y el mesh escaneado puede estar en otra. Ajusta hasta que se vean proporcionados sobre el terreno.</div>
+    <div class="ed-row"><span class="ed-lbl">Escala</span><input type="range" id="escObj" min="1" max="500" value="100"><b id="escObjV">1.00×</b></div>
+    <button class="act p" id="escObjOk">Listo</button>
+  </div>
+</div></div>
+
 <div class="ov hide" id="scaleOv"><div class="sheet sm">
   <div class="sheet-h"><span class="sheet-t">Escala del nivel</span><button class="sheet-x" id="scaleX">×</button></div>
   <div class="col">
@@ -809,7 +819,7 @@ header{
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-const S={tool:'select',objects:[],sel:null,mapImg:null,nextId:1,cam:{x:0,y:0,z:1},drag:{on:false},cW:0,cH:0,ip:localStorage.getItem('ip')||'',conn:false,files:[],db:null,chatId:null,chatMsgs:[],chatsUnsub:null,msgsUnsub:null,levelId:null,lvlUnsub:null,undo:[],redo:[],dirty:false,pending:null,scaleCm:0,charCm:0};
+const S={tool:'select',objects:[],sel:null,mapImg:null,nextId:1,cam:{x:0,y:0,z:1},drag:{on:false},cW:0,cH:0,ip:localStorage.getItem('ip')||'',conn:false,files:[],db:null,chatId:null,chatMsgs:[],chatsUnsub:null,msgsUnsub:null,levelId:null,lvlUnsub:null,undo:[],redo:[],dirty:false,pending:null,escalaObj:1,scaleCm:0,charCm:0};
 const OBJS={spawn:{ab:'S',l:'Spawn',u:1,c:'#7aaa5a'},taza:{ab:'T',l:'Taza',u:1,c:'#e08c4a',phys:{dyn:0,col:'mesh_convex'}},carro_cafe:{ab:'C',l:'Carro',u:0,c:'#c4b068',phys:{dyn:0,col:'box'}},grano:{ab:'G',l:'Grano',u:0,c:'#a8895a',phys:{dyn:1,col:'mesh_convex'}},basura:{ab:'B',l:'Basura',u:0,c:'#d4593a',phys:{dyn:1,col:'mesh_convex'}},maquina:{ab:'M',l:'Máquina',u:0,c:'#6a9eb8',phys:{dyn:0,col:'box'}},cliente:{ab:'Cl',l:'Cliente',u:0,c:'#c478c4',phys:{dyn:1,col:'capsule'}},explorador:{ab:'E',l:'Explor.',u:0,c:'#78c4c4',phys:{dyn:1,col:'capsule'}},luz:{ab:'L',l:'Luz',u:0,c:'#f0c850',light:1}};
 const $=id=>document.getElementById(id);
 // Devuelve la base del servidor: acepta IP simple (192.168.1.37) o URL completa (https://x.trycloudflare.com)
@@ -828,7 +838,7 @@ function switchTab(t){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   $(t+'View').classList.add('active');
   ['jsonBtn','saveBtn','undoBtn'].forEach(b=>{const el=$(b);if(el)el.style.display=t==='level'?'':'none';});
-  if(t==='level'){resize();if(E3.on)setTimeout(resize3D,30);}
+  if(t==='level'){resize();sincronizar3D();}
   if(t==='scripts')renderScripts();
   if(t==='mesh'){initMeshViewer();setTimeout(resizeMeshViewer,50);}
 }
@@ -1109,6 +1119,91 @@ function imgThumb(tipo,alLlegar){
   return im;
 }
 
+
+// ─── GEOMETRÍA DE PREFABS ───────────────────────────────────────────────────
+// Unity exporta un OBJ ligero por tipo. Colocar el objeto real sobre el barro
+// deja ver de verdad dónde queda, cosa que un icono plano no permite.
+const GEOS={disponibles:new Set(),cache:new Map(),pidiendo:new Set()};
+
+async function cargarGeos(){
+  if(!S.ip||!S.conn)return;
+  try{
+    const r=await fetch(`${srvURL()}/objmeshes`,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return;
+    const d=await r.json();
+    GEOS.disponibles=new Set(d.meshes||[]);
+    if(GEOS.disponibles.size&&E3.on)refrescar3D();
+  }catch(e){}
+}
+
+/// Devuelve la geometría si ya está, o la pide y avisa al llegar
+function geoDe(tipo,alLlegar){
+  if(GEOS.cache.has(tipo))return GEOS.cache.get(tipo);
+  if(!GEOS.disponibles.has(tipo)||GEOS.pidiendo.has(tipo))return null;
+  GEOS.pidiendo.add(tipo);
+  fetch(`${srvURL()}/objmesh?type=${encodeURIComponent(tipo)}`)
+    .then(r=>r.ok?r.text():Promise.reject())
+    .then(txt=>{
+      if(!THREE.OBJLoader)throw 0;
+      const grupo=new THREE.OBJLoader().parse(txt);
+      let geo=null;
+      grupo.traverse(o=>{if(o.isMesh&&!geo)geo=o.geometry;});
+      if(!geo)throw 0;
+      geo.computeVertexNormals();
+      geo.computeBoundingBox();
+      // Guardar el alto para poder apoyarlo en la superficie
+      const sz=new THREE.Vector3();geo.boundingBox.getSize(sz);
+      geo.userData.baseY=geo.boundingBox.min.y;
+      geo.userData.alto=sz.y||1;
+      GEOS.cache.set(tipo,geo);
+      GEOS.pidiendo.delete(tipo);
+      if(alLlegar)alLlegar(geo);
+    })
+    .catch(()=>{GEOS.pidiendo.delete(tipo);GEOS.disponibles.delete(tipo);});
+  return null;
+}
+
+/// Objeto 3D real, con la orientación y escala que tenga asignadas
+function objeto3DReal(o,geo){
+  const d=OBJS[o.type]||{c:'#c9a878'};
+  const col=(d.light&&o.light)?o.light.color:d.c;
+  const sel=o.id===S.sel;
+  const mat=new THREE.MeshStandardMaterial({
+    color:new THREE.Color(col),roughness:.85,metalness:.05,
+    emissive:new THREE.Color(col),emissiveIntensity:sel?.35:.08});
+  const m=new THREE.Mesh(geo,mat);
+  m.userData.objId=o.id;
+  aplicarTransform3D(m,o,geo);
+  if(sel){
+    // Contorno para distinguir el seleccionado
+    const wire=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({
+      color:0xffffff,wireframe:true,transparent:true,opacity:.25}));
+    wire.userData.objId=o.id;
+    m.add(wire);
+  }
+  return m;
+}
+
+function aplicarTransform3D(m,o,geo){
+  m.position.set(o.p.x,o.p.y,o.p.z);
+  m.rotation.set(0,0,0);
+  // Alinear a la superficie si el objeto se posó en una pared o techo
+  if(o.n&&Math.abs(o.n.y)<0.97){
+    const up=new THREE.Vector3(0,1,0);
+    const n=new THREE.Vector3(o.n.x,o.n.y,o.n.z).normalize();
+    m.quaternion.setFromUnitVectors(up,n);
+  }
+  if(o.rot){
+    m.rotateY(THREE.MathUtils.degToRad(o.rot.y||0));
+    m.rotateX(THREE.MathUtils.degToRad(o.rot.x||0));
+  }
+  const k=(o.scl||1)*(S.escalaObj||1);
+  m.scale.setScalar(k);
+  // Apoyar la base sobre el punto donde se colocó
+  if(geo&&geo.userData.baseY!=null)
+    m.translateY(-geo.userData.baseY*k);
+}
+
 // ─── EDITOR 3D ──────────────────────────────────────────────────────────────
 // Colocar objetos directamente sobre la malla escaneada: la posición sale de
 // un raycast contra la superficie, así que X, Y y Z son exactas y se pueden
@@ -1146,7 +1241,7 @@ function init3D(){
     E3.cam.lookAt(E3.target);
     // Las marcas miran siempre a cámara y mantienen tamaño aparente
     const k=E3.dist*0.028;
-    E3.marcas.forEach(m=>{m.quaternion.copy(E3.cam.quaternion);m.scale.setScalar(k);});
+    E3.marcas.forEach(m=>{if(m.isSprite){m.quaternion.copy(E3.cam.quaternion);m.scale.setScalar(k);}});
     E3.rend.render(E3.scene,E3.cam);
   })();
   return true;
@@ -1286,10 +1381,12 @@ function pick3D(cx,cy){
   const v=new THREE.Vector2(((cx-r.left)/r.width)*2-1, -((cy-r.top)/r.height)*2+1);
   E3.ray.setFromCamera(v,E3.cam);
   const lista=[...E3.marcas.values()];
-  const hits=E3.ray.intersectObjects(lista,false);
+  const hits=E3.ray.intersectObjects(lista,true);   // true: incluye hijos
   if(!hits.length)return null;
-  const id=hits[0].object.userData.objId;
-  return S.objects.find(o=>o.id===id)||null;
+  // Subir por la jerarquía hasta encontrar a quién pertenece
+  let ob=hits[0].object, id=null;
+  while(ob&&id==null){id=ob.userData&&ob.userData.objId;ob=ob.parent;}
+  return id!=null?(S.objects.find(o=>o.id===id)||null):null;
 }
 
 function colocar3D(cx,cy){
@@ -1353,20 +1450,27 @@ function marcaDe(o){
 
 function refrescar3D(){
   if(!E3.scene)return;
-  E3.marcas.forEach(m=>{E3.scene.remove(m);m.material.map.dispose();m.material.dispose();});
+  E3.marcas.forEach(m=>{
+    E3.scene.remove(m);
+    if(m.material){if(m.material.map)m.material.map.dispose();m.material.dispose();}
+  });
   E3.marcas.clear();
   S.objects.forEach(o=>{
     if(!o.p)return;     // los objetos del editor 2D antiguo no tienen posición 3D
-    const m=marcaDe(o);
+    const geo=geoDe(o.type,()=>{if(E3.on)refrescar3D();});
+    const m=geo?objeto3DReal(o,geo):marcaDe(o);
     E3.scene.add(m);
     E3.marcas.set(o.id,m);
   });
 }
 
 /// Usa el mesh que ya está cargado en la pestaña Mesh
-function cargarMeshEn3D(){
-  if(!MV.mesh){return false;}
+function cargarMeshEn3D(forzar){
+  if(!MV.mesh)return false;
+  // Si ya está puesta esta misma geometría, no recargar (perdería el encuadre)
+  if(!forzar&&E3.mesh&&E3.geoId===MV.mesh.geometry.uuid)return true;
   if(E3.mesh){E3.scene.remove(E3.mesh);}
+  E3.geoId=MV.mesh.geometry.uuid;
   E3.mesh=new THREE.Mesh(MV.mesh.geometry, MV.mesh.material);
   E3.mesh.name='terreno';
   E3.scene.add(E3.mesh);
@@ -1377,6 +1481,29 @@ function cargarMeshEn3D(){
   E3.target.copy(c);
   E3.dist=Math.max(t.x,t.y,t.z)*1.8||3;
   return true;
+}
+
+
+/// Mantiene el editor 3D al día con el mesh cargado en la pestaña Mesh.
+/// Se llama al entrar en Level y al cargar un mesh nuevo.
+function sincronizar3D(){
+  if(!MV.mesh){
+    // No hay mesh: asegurarse de que no queda una vista 3D vacía
+    if(E3.on)modo3D(false);
+    $('view3dBtn').disabled=true;
+    $('view3dBtn').title='Carga un mesh en la pestaña Mesh';
+    return;
+  }
+  $('view3dBtn').disabled=false;
+  $('view3dBtn').title='';
+  if(!E3.on){
+    modo3D(true);          // con mesh disponible, el 3D es el modo natural
+  }else{
+    if(!init3D())return;
+    cargarMeshEn3D();      // refresca si cambió el mesh
+    refrescar3D();
+    setTimeout(resize3D,30);
+  }
 }
 
 function modo3D(activar){
@@ -1473,8 +1600,12 @@ function edRefrescarPos(){
 
 function edMarcarSucio(){
   S.dirty=true;updateSaveBtn();
-  const m=E3.marcas.get(ED.obj.id);
-  if(m&&ED.obj.p)m.position.set(ED.obj.p.x,ED.obj.p.y,ED.obj.p.z);
+  const o=ED.obj;
+  const m=E3.marcas.get(o.id);
+  if(m&&o.p){
+    if(m.isSprite)m.position.set(o.p.x,o.p.y,o.p.z);
+    else aplicarTransform3D(m,o,m.geometry);
+  }
   edRefrescarPos();
 }
 
@@ -1492,8 +1623,10 @@ function edBucle(){
     E3.cam.matrixWorld.extractBasis(der,arr,ade);
     der.y=0;der.normalize();
     ade.y=0;ade.normalize();
-    o.p.x+= (der.x*ED.vec.x - ade.x*ED.vec.y)*f;
-    o.p.z+= (der.z*ED.vec.x - ade.z*ED.vec.y)*f;
+    // 'ade' es la Z de la cámara, que apunta hacia atrás: arrastrar hacia
+    // arriba (vec.y negativo) debe alejar el objeto del punto de vista.
+    o.p.x+= (der.x*ED.vec.x + ade.x*ED.vec.y)*f;
+    o.p.z+= (der.z*ED.vec.x + ade.z*ED.vec.y)*f;
     cambio=true;
   }
   if(ED.alt){
@@ -1642,6 +1775,19 @@ function edActualizarBotones(){
 }
 
 // ─── ESCALA REAL ────────────────────────────────────────────────────────────
+$('escObjBtn').addEventListener('click',()=>{
+  $('escObj').value=Math.round((S.escalaObj||1)*100);
+  $('escObjV').textContent=(S.escalaObj||1).toFixed(2)+'×';
+  $('escObjOv').classList.remove('hide');
+});
+$('escObjX').addEventListener('click',()=>$('escObjOv').classList.add('hide'));
+$('escObjOk').addEventListener('click',()=>$('escObjOv').classList.add('hide'));
+$('escObj').addEventListener('input',e=>{
+  S.escalaObj=+(e.target.value/100).toFixed(2);
+  $('escObjV').textContent=S.escalaObj.toFixed(2)+'×';
+  if(E3.on)refrescar3D();
+  S.dirty=true;updateSaveBtn();
+});
 $('scaleTrig').addEventListener('click',()=>{
   $('scaleCm').value=S.scaleCm||'';
   $('charCm').value=S.charCm||'';
@@ -1858,13 +2004,13 @@ async function doSave(){if(!S.db||!S.levelId){toast('Conecta Firebase para guard
 // LEVELS
 let levels=[];
 function curLevelName(){return $('levelSelName').textContent;}
-function snapshotLevel(){return{name:curLevelName(),objects:S.objects.map(o=>{const e={type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:G.layers.map(l=>({name:l.name,color:l.color,vis:l.vis,strokes:l.strokes})),scaleCm:S.scaleCm||0,charCm:S.charCm||0,nextId:S.nextId,updatedAt:Date.now()};}
+function snapshotLevel(){return{name:curLevelName(),objects:S.objects.map(o=>{const e={type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:G.layers.map(l=>({name:l.name,color:l.color,vis:l.vis,strokes:l.strokes})),scaleCm:S.scaleCm||0,charCm:S.charCm||0,escalaObj:S.escalaObj||1,nextId:S.nextId,updatedAt:Date.now()};}
 function loadLevels(){if(!S.db)return;if(S.lvlUnsub)S.lvlUnsub();S.lvlUnsub=S.db.collection('levels').orderBy('updatedAt','desc').onSnapshot(s=>{levels=s.docs.map(d=>({id:d.id,...d.data()}));renderLevels();if(!S.levelId&&levels.length)openLevel(levels[0].id);else if(!S.levelId)newLevel();});}
 function renderLevels(){const el=$('lvlList');if(!levels.length){el.innerHTML='<div class="empty">Sin niveles — crea uno nuevo</div>';return;}el.innerHTML=levels.map(l=>{const n=(l.objects||[]).length;return `<div class="li ${l.id===S.levelId?'on':''}" data-id="${l.id}"><span class="li-ic"><svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg></span><div class="li-info"><div class="li-t">${esc(l.name||'Sin nombre')}</div><div class="li-s">${n} objeto${n!==1?'s':''}</div></div><button class="li-x" data-del="${l.id}">×</button></div>`;}).join('');el.querySelectorAll('.li').forEach(i=>i.addEventListener('click',e=>{if(e.target.dataset.del)return;openLevel(i.dataset.id);$('lvlOv').classList.add('hide');}));el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();delLevel(b.dataset.del);}));}
 async function newLevel(){const name='nivel_'+String(levels.length+1).padStart(2,'0');if(S.db){const r=await S.db.collection('levels').add({name,objects:[],nextId:1,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});openLevel(r.id);}else{const id='llocal_'+Date.now();levels.unshift({id,name,objects:[],nextId:1});openLevel(id);}$('lvlOv').classList.add('hide');}
 async function delLevel(id){if(!confirm('¿Eliminar este nivel?'))return;if(S.db){try{await S.db.collection('levels').doc(id).delete();}catch(e){}}else{levels=levels.filter(l=>l.id!==id);renderLevels();}if(S.levelId===id){S.levelId=null;if(levels.length)openLevel(levels[0].id);else newLevel();}}
 function openLevel(id){const l=levels.find(x=>x.id===id);if(!l)return;S.levelId=id;(l.objects||[]).forEach(o=>{if(!OBJS[o.type])OBJS[o.type]={ab:'?',l:o.type.replace(/^c_/,''),u:0,c:'#7a6a55',phys:{dyn:0,col:'mesh_convex'},custom:1};});
-  S.objects=(l.objects||[]).map((o,i)=>{const e={id:i+1,type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;});if(l.grass&&l.grass.length){G.layers=l.grass.map(g=>({name:g.name,color:g.color,vis:g.vis!==false,strokes:g.strokes||[]}));G.active=0;renderGrassLayers();drawGrass();}S.nextId=(l.nextId)||S.objects.length+1;S.scaleCm=l.scaleCm||0;S.charCm=l.charCm||0;S.sel=null;S.undo=[];S.dirty=false;updateSaveBtn();$('levelSelName').textContent=l.name||'nivel';S.mapImg=null;$('drop').classList.remove('hide');selPanel();fit();render();if(E3.on)refrescar3D();renderLevels();}
+  S.objects=(l.objects||[]).map((o,i)=>{const e={id:i+1,type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;});if(l.grass&&l.grass.length){G.layers=l.grass.map(g=>({name:g.name,color:g.color,vis:g.vis!==false,strokes:g.strokes||[]}));G.active=0;renderGrassLayers();drawGrass();}S.nextId=(l.nextId)||S.objects.length+1;S.scaleCm=l.scaleCm||0;S.charCm=l.charCm||0;S.escalaObj=l.escalaObj||1;S.sel=null;S.undo=[];S.dirty=false;updateSaveBtn();$('levelSelName').textContent=l.name||'nivel';S.mapImg=null;$('drop').classList.remove('hide');selPanel();fit();render();if(E3.on)refrescar3D();renderLevels();}
 $('levelSel').addEventListener('click',()=>{renderLevels();$('lvlOv').classList.remove('hide');});
 $('lvlX').addEventListener('click',()=>$('lvlOv').classList.add('hide'));
 $('lvlNew').addEventListener('click',newLevel);
@@ -1886,7 +2032,7 @@ $('lvlDup').addEventListener('click',async()=>{
 // PC
 if(S.ip)$('ipIn').value=S.ip;
 function setConn(s,t){const d1=$('dot'),d2=$('dot2');if(d1)d1.className='dot '+s;if(d2)d2.className='dot '+s;}
-async function connect(){if(!S.ip)return;setConn('wait','');try{const r=await fetch(`http://${ip}:7845/files`,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw 0;const d=await r.json();S.files=d.files||[];S.conn=true;setConn('ok','');for(const f of S.files){if(!f.content){try{const rr=await fetch(`${srvURL()}/file?path=${encodeURIComponent(f.path)}`);f.content=(await rr.json()).content||'';}catch(e){f.content='';}}}toast(`${S.files.length} scripts cargados`);renderScripts();cargarThumbs();if(consoleOpen)startConsolePoll();}catch(e){S.conn=false;setConn('err','');}}
+async function connect(){if(!S.ip)return;setConn('wait','');try{const r=await fetch(`http://${ip}:7845/files`,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw 0;const d=await r.json();S.files=d.files||[];S.conn=true;setConn('ok','');for(const f of S.files){if(!f.content){try{const rr=await fetch(`${srvURL()}/file?path=${encodeURIComponent(f.path)}`);f.content=(await rr.json()).content||'';}catch(e){f.content='';}}}toast(`${S.files.length} scripts cargados`);renderScripts();cargarThumbs();cargarGeos();if(consoleOpen)startConsolePoll();}catch(e){S.conn=false;setConn('err','');}}
 
 // SCRIPTS
 function renderScripts(){const el=$('scrList');if(!S.conn){el.innerHTML='<div class="empty">Conecta al PC en Ajustes<br>para ver tus scripts</div>';return;}el.innerHTML=S.files.length?S.files.map(f=>`<div class="srow ${f.modified?'mod':''}" data-p="${f.path}"><svg style="width:15px;height:15px;color:var(--text-mid)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="sname">${esc(f.name)}</span><span class="ssize">${f.size}</span></div>`).join(''):'<div class="empty">Sin scripts en el proyecto</div>';el.querySelectorAll('.srow').forEach(r=>r.addEventListener('click',()=>{const f=S.files.find(x=>x.path===r.dataset.p);if(!f)return;$('svT').textContent=f.name;$('svCode').textContent=f.content||'(vacío)';$('svOv').classList.remove('hide');}));}
@@ -2036,6 +2182,7 @@ function loadMeshGeometry(geo,mat){
   const ss=$('scaleSlider');if(ss){ss.value=100;$('scaleVal').textContent='1.0×';}
   $('meshEmpty').style.display='none';$('meshTools').style.display='block';
   pistaGestos();
+  if(typeof sincronizar3D==='function'&&E3.on){cargarMeshEn3D(true);refrescar3D();}
   updateMeshInfo();
 }
 function stripGLBTextures(buf){
@@ -2299,7 +2446,7 @@ $('cropSlider')&&$('cropSlider').addEventListener('input',e=>{$('cropVal').textC
 function applyCrop(){if(!MV.origGeo||!MV.mesh)return;const g=MV.origGeo.clone();g.computeBoundingBox();const minY=g.boundingBox.min.y,h=g.boundingBox.max.y-minY,cut=minY+h*MV.crop;const pos=g.attributes.position,keep=[];const idx=g.index?g.index.array:null;function vy(i){return pos.getY(i);}
   // simple: rebuild non-indexed, drop triangles fully below cut
   const np=[];const src=idx?idx:Array.from({length:pos.count},(_,i)=>i);for(let i=0;i<src.length;i+=3){const a=src[i],b=src[i+1],c=src[i+2];if(vy(a)<cut&&vy(b)<cut&&vy(c)<cut)continue;[a,b,c].forEach(v=>{np.push(pos.getX(v),pos.getY(v),pos.getZ(v));});}
-  const ng=new THREE.BufferGeometry();ng.setAttribute('position',new THREE.Float32BufferAttribute(np,3));ng.computeVertexNormals();ng.center();ng.computeBoundingBox();const sz=new THREE.Vector3();ng.boundingBox.getSize(sz);const sc=2/Math.max(sz.x,sz.y,sz.z);ng.scale(sc,sc,sc);MV.mesh.geometry.dispose();MV.mesh.geometry=ng;updateMeshInfo();if(MV.wireOn)buildWireframe();}
+  const ng=new THREE.BufferGeometry();ng.setAttribute('position',new THREE.Float32BufferAttribute(np,3));ng.computeVertexNormals();ng.center();ng.computeBoundingBox();const sz=new THREE.Vector3();ng.boundingBox.getSize(sz);const sc=2/Math.max(sz.x,sz.y,sz.z);ng.scale(sc,sc,sc);MV.mesh.geometry.dispose();MV.mesh.geometry=ng;updateMeshInfo();if(MV.wireOn)buildWireframe();if(E3.on){cargarMeshEn3D(true);refrescar3D();}}
 // Transform
 $('rotL')&&$('rotL').addEventListener('click',()=>{if(MV.mesh)MV.mesh.rotation.z+=Math.PI/2;});
 $('rotR')&&$('rotR').addEventListener('click',()=>{if(MV.mesh)MV.mesh.rotation.z-=Math.PI/2;});
@@ -2363,6 +2510,7 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
 
 
 // INIT
+$('view3dBtn').disabled=true;
 initGrass();resize();fit();render();loadCustom();loadConns();
 if(S.ip)connect();
 if(!savedFB){S.chatId='local_0';welcome();}
