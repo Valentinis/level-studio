@@ -960,6 +960,44 @@ $('connAdd').addEventListener('click',()=>{
 });
 
 
+
+// ─── MINIATURAS DE PREFABS ──────────────────────────────────────────────────
+// Unity exporta una imagen por tipo; si existe, se usa en vez de la inicial.
+const THUMBS={disponibles:new Set(),cache:new Map(),cargado:false};
+
+async function cargarThumbs(){
+  if(!S.ip||!S.conn)return;
+  try{
+    const r=await fetch(`${srvURL()}/thumbs`,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return;
+    const d=await r.json();
+    THUMBS.disponibles=new Set(d.thumbs||[]);
+    THUMBS.cargado=true;
+    if(THUMBS.disponibles.size){
+      renderCustomTools();render();
+      if(E3.on)refrescar3D();
+    }
+  }catch(e){}
+}
+
+function urlThumb(tipo){
+  return THUMBS.disponibles.has(tipo)?`${srvURL()}/thumb?type=${encodeURIComponent(tipo)}`:null;
+}
+
+/// Devuelve la imagen ya cargada, o la pide y avisa cuando llegue
+function imgThumb(tipo,alLlegar){
+  if(THUMBS.cache.has(tipo))return THUMBS.cache.get(tipo);
+  const u=urlThumb(tipo);
+  if(!u)return null;
+  const im=new Image();
+  im.crossOrigin='anonymous';
+  im.onload=()=>{if(alLlegar)alLlegar(im);};
+  im.onerror=()=>{THUMBS.cache.delete(tipo);THUMBS.disponibles.delete(tipo);};
+  im.src=u;
+  THUMBS.cache.set(tipo,im);
+  return im;
+}
+
 // ─── EDITOR 3D ──────────────────────────────────────────────────────────────
 // Colocar objetos directamente sobre la malla escaneada: la posición sale de
 // un raycast contra la superficie, así que X, Y y Z son exactas y se pueden
@@ -1166,16 +1204,33 @@ function colocar3D(cx,cy){
 }
 
 /// Dibuja una marca por objeto: disco de color con su inicial
-function marcaDe(o){
+function pintarMarca(cvs,o,im){
   const d=OBJS[o.type]||{ab:'?',c:'#888'};
   const col=(d.light&&o.light)?o.light.color:d.c;
-  const cvs=document.createElement('canvas');cvs.width=cvs.height=128;
   const x=cvs.getContext('2d');
+  x.clearRect(0,0,128,128);
   x.beginPath();x.arc(64,64,54,0,7);
   x.fillStyle=o.id===S.sel?col:'rgba(13,11,9,.92)';x.fill();
+  if(im&&im.complete&&im.naturalWidth){
+    // Recortar la miniatura en círculo dentro de la marca
+    x.save();x.beginPath();x.arc(64,64,46,0,7);x.clip();
+    x.drawImage(im,18,18,92,92);x.restore();
+  }else{
+    x.font='700 52px Space Grotesk, sans-serif';x.textAlign='center';x.textBaseline='middle';
+    x.fillStyle=o.id===S.sel?'#1a1208':col;x.fillText(d.ab||'?',64,66);
+  }
   x.lineWidth=o.id===S.sel?10:7;x.strokeStyle=o.id===S.sel?'#fff':col;x.stroke();
-  x.font='700 52px Space Grotesk, sans-serif';x.textAlign='center';x.textBaseline='middle';
-  x.fillStyle=o.id===S.sel?'#1a1208':col;x.fillText(d.ab||'?',64,66);
+}
+
+function marcaDe(o){
+  const d=OBJS[o.type]||{ab:'?',c:'#888'};
+  const cvs=document.createElement('canvas');cvs.width=cvs.height=128;
+  const im=imgThumb(o.type,()=>{
+    // Cuando llegue la imagen, repintar esta marca
+    const m=E3.marcas.get(o.id);
+    if(m){pintarMarca(cvs,o,im);m.material.map.needsUpdate=true;}
+  });
+  pintarMarca(cvs,o,im);
   const tex=new THREE.CanvasTexture(cvs);
   const m=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
   m.renderOrder=999;
@@ -1308,7 +1363,7 @@ function registerCustom(c){
 }
 function renderCustomTools(){
   const el=$('customTools');if(!el)return;
-  el.innerHTML=custom.map(c=>`<div class="tool" data-tool="${c.type}" data-cust="${c.type}"><div class="tool-ic"><span style="display:inline-flex;width:19px;height:19px;border-radius:6px;background:${c.color};color:#1a1208;font-size:9px;font-weight:700;align-items:center;justify-content:center;font-family:'Space Grotesk'">${c.ab}</span></div><div class="tool-tx">${esc(c.name.slice(0,7))}</div></div>`).join('');
+  el.innerHTML=custom.map(c=>{const u=urlThumb(c.type);const ic=u?`<img src="${u}" style="width:22px;height:22px;object-fit:contain;border-radius:5px;background:rgba(0,0,0,.25)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${c.ab}',style:'display:inline-flex;width:19px;height:19px;border-radius:6px;background:${c.color};color:#1a1208;font-size:9px;font-weight:700;align-items:center;justify-content:center'}))">`:`<span style="display:inline-flex;width:19px;height:19px;border-radius:6px;background:${c.color};color:#1a1208;font-size:9px;font-weight:700;align-items:center;justify-content:center;font-family:'Space Grotesk'">${c.ab}</span>`;return `<div class="tool" data-tool="${c.type}" data-cust="${c.type}"><div class="tool-ic">${ic}</div><div class="tool-tx">${esc(c.name.slice(0,7))}</div></div>`;}).join('');
   el.querySelectorAll('.tool').forEach(b=>{
     b.addEventListener('click',()=>selectTool(b));
     let t=null;
@@ -1475,7 +1530,7 @@ $('lvlDup').addEventListener('click',async()=>{
 // PC
 if(S.ip)$('ipIn').value=S.ip;
 function setConn(s,t){const d1=$('dot'),d2=$('dot2');if(d1)d1.className='dot '+s;if(d2)d2.className='dot '+s;}
-async function connect(){if(!S.ip)return;setConn('wait','');try{const r=await fetch(`http://${ip}:7845/files`,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw 0;const d=await r.json();S.files=d.files||[];S.conn=true;setConn('ok','');for(const f of S.files){if(!f.content){try{const rr=await fetch(`${srvURL()}/file?path=${encodeURIComponent(f.path)}`);f.content=(await rr.json()).content||'';}catch(e){f.content='';}}}toast(`${S.files.length} scripts cargados`);renderScripts();if(consoleOpen)startConsolePoll();}catch(e){S.conn=false;setConn('err','');}}
+async function connect(){if(!S.ip)return;setConn('wait','');try{const r=await fetch(`http://${ip}:7845/files`,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw 0;const d=await r.json();S.files=d.files||[];S.conn=true;setConn('ok','');for(const f of S.files){if(!f.content){try{const rr=await fetch(`${srvURL()}/file?path=${encodeURIComponent(f.path)}`);f.content=(await rr.json()).content||'';}catch(e){f.content='';}}}toast(`${S.files.length} scripts cargados`);renderScripts();cargarThumbs();if(consoleOpen)startConsolePoll();}catch(e){S.conn=false;setConn('err','');}}
 
 // SCRIPTS
 function renderScripts(){const el=$('scrList');if(!S.conn){el.innerHTML='<div class="empty">Conecta al PC en Ajustes<br>para ver tus scripts</div>';return;}el.innerHTML=S.files.length?S.files.map(f=>`<div class="srow ${f.modified?'mod':''}" data-p="${f.path}"><svg style="width:15px;height:15px;color:var(--text-mid)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="sname">${esc(f.name)}</span><span class="ssize">${f.size}</span></div>`).join(''):'<div class="empty">Sin scripts en el proyecto</div>';el.querySelectorAll('.srow').forEach(r=>r.addEventListener('click',()=>{const f=S.files.find(x=>x.path===r.dataset.p);if(!f)return;$('svT').textContent=f.name;$('svCode').textContent=f.content||'(vacío)';$('svOv').classList.remove('hide');}));}
