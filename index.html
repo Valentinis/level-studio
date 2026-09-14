@@ -378,6 +378,19 @@ header{
 .fin{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'JetBrains Mono';padding:11px 13px;border-radius:9px;outline:none;width:100%;}
 .fin:focus{border-color:var(--accent);}
 .fin::placeholder{color:var(--text-dim);}
+.bib-cats{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 4px;flex-shrink:0;}
+.bib-cat{font-size:10px;font-weight:600;padding:5px 11px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text-mid);cursor:pointer;}
+.bib-cat.on{border-color:var(--accent);color:var(--accent);}
+.bib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;overflow-y:auto;flex:1;padding:4px 2px 8px;}
+.bib-it{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:8px 5px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;}
+.bib-it:active{transform:scale(.95);}
+.bib-it.on{border-color:var(--accent);}
+.bib-im{width:46px;height:46px;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.22);}
+.bib-im-ph{width:46px;height:46px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:'Space Grotesk';color:#1a1208;}
+.bib-nm{font-size:9px;color:var(--text-mid);text-align:center;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.bib-pin{position:absolute;top:3px;right:3px;width:20px;height:20px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;padding:0;}
+.bib-pin svg{width:13px;height:13px;}
+.bib-pin.on{color:var(--accent);}
 .conn-list{display:flex;flex-direction:column;gap:5px;}
 .conn-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;}
 .conn-item.on{border-color:var(--accent);}
@@ -439,24 +452,11 @@ header{
       <div class="sdiv"></div>
       <div class="slabel">Nivel</div>
       <div class="tool" data-tool="spawn"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><circle cx="12" cy="12" r="9"/></svg></div><div class="tool-tx">Spawn</div></div>
-      <div class="tool" data-tool="taza"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg></div><div class="tool-tx">Taza</div></div>
-      <div class="sdiv"></div>
-      <div class="slabel">Items</div>
-      <div class="tool" data-tool="carro_cafe"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></div><div class="tool-tx">Carro</div></div>
-      <div class="tool" data-tool="grano"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="6" ry="9"/><path d="M12 3c-2 3-2 15 0 18"/></svg></div><div class="tool-tx">Grano</div></div>
-      <div class="tool" data-tool="basura"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-1.5 16.5a2 2 0 0 1-2 1.5H8.5a2 2 0 0 1-2-1.5Z"/><path d="M4 4h16"/><path d="m9 8 .5 9M15 8l-.5 9"/></svg></div><div class="tool-tx">Basura</div></div>
-      <div class="tool" data-tool="maquina"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><circle cx="12" cy="16" r="2"/></svg></div><div class="tool-tx">Máquina</div></div>
-      <div class="sdiv"></div>
-      <div class="slabel">NPCs</div>
-      <div class="tool" data-tool="cliente"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/></svg></div><div class="tool-tx">Cliente</div></div>
-      <div class="tool" data-tool="explorador"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><div class="tool-tx">Explor.</div></div>
-      <div class="sdiv"></div>
-      <div class="slabel">Míos</div>
-      <div id="customTools"></div>
-      <div class="tool tool-add" id="addCustomBtn"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="tool-tx">Nuevo</div></div>
-      <div class="sdiv"></div>
-      <div class="slabel">Luces</div>
       <div class="tool" data-tool="luz"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg></div><div class="tool-tx">Luz</div></div>
+      <div class="sdiv"></div>
+      <div class="slabel">Objetos</div>
+      <div id="fijados"></div>
+      <div class="tool tool-add" id="abrirBib"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="17.5" cy="17.5" r="3"/><line x1="19.6" y1="19.6" x2="21.5" y2="21.5"/></svg></div><div class="tool-tx">Todos</div></div>
       <div class="sdiv"></div>
       <div class="slabel">Césped</div>
       <div class="tool" data-tool="grass_paint"><div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20c0-4 0-8-2-11M12 20c0-4 0-8 2-11M12 20c-2-3-5-5-8-5M12 20c2-3 5-5 8-5"/></svg></div><div class="tool-tx">Pintar</div></div>
@@ -735,6 +735,13 @@ header{
   <div style="display:flex;gap:8px;"><button class="act" id="lvlDup">Duplicar actual</button><button class="act p" id="lvlNew" style="flex:1.4;">+ Nuevo nivel</button></div>
 </div></div>
 
+<div class="ov hide" id="bibOv"><div class="sheet lg">
+  <div class="sheet-h"><span class="sheet-t">Objetos</span><button class="sheet-x" id="bibX">×</button></div>
+  <input class="fin" id="bibBuscar" placeholder="Buscar..." autocomplete="off">
+  <div class="bib-cats" id="bibCats"></div>
+  <div class="bib-grid" id="bibGrid"></div>
+</div></div>
+
 <div class="ov hide" id="escObjOv"><div class="sheet sm">
   <div class="sheet-h"><span class="sheet-t">Tamaño de los objetos</span><button class="sheet-x" id="escObjX">×</button></div>
   <div class="col">
@@ -751,27 +758,6 @@ header{
     <div><div class="lbl">Altura del personaje (cm)</div><input class="fin" id="charCm" type="number" inputmode="decimal" placeholder="4" min="0.5" max="100" step="0.5"></div>
     <div class="hint">Sirve de referencia para juzgar si el personaje cabe por los pasos estrechos. Se dibuja una regla y la silueta del personaje en el mapa.</div>
     <button class="act p" id="scaleSave">Guardar</button>
-  </div>
-</div></div>
-
-<div class="ov hide" id="custOv"><div class="sheet sm">
-  <div class="sheet-h"><span class="sheet-t">Nuevo objeto</span><button class="sheet-x" id="custX">×</button></div>
-  <div class="col">
-    <div><div class="lbl">Nombre</div><input class="fin" id="custName" placeholder="Butaca, Estantería, Planta..." maxlength="18"></div>
-    <div><div class="lbl">Categoría</div>
-      <select class="fin" id="custCat">
-        <option value="mueble">Mueble</option>
-        <option value="deco">Decoración</option>
-        <option value="gameplay">Gameplay</option>
-        <option value="npc">NPC</option>
-        <option value="portal">Portal / Puerta</option>
-      </select>
-    </div>
-    <div><div class="lbl">Color en el mapa</div><input type="color" class="fin" id="custColor" value="#c4b068" style="height:44px;padding:3px;"></div>
-    <div style="display:flex;gap:8px;">
-      <button class="act" id="custDel" style="border-color:var(--red);color:var(--red);display:none;">Eliminar</button>
-      <button class="act p" id="custSave" style="flex:2;">Guardar</button>
-    </div>
   </div>
 </div></div>
 
@@ -820,7 +806,16 @@ header{
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
 const S={tool:'select',objects:[],sel:null,mapImg:null,nextId:1,cam:{x:0,y:0,z:1},drag:{on:false},cW:0,cH:0,ip:localStorage.getItem('ip')||'',conn:false,files:[],db:null,chatId:null,chatMsgs:[],chatsUnsub:null,msgsUnsub:null,levelId:null,lvlUnsub:null,undo:[],redo:[],dirty:false,pending:null,escalaObj:1,scaleCm:0,charCm:0};
-const OBJS={spawn:{ab:'S',l:'Spawn',u:1,c:'#7aaa5a'},taza:{ab:'T',l:'Taza',u:1,c:'#e08c4a',phys:{dyn:0,col:'mesh_convex'}},carro_cafe:{ab:'C',l:'Carro',u:0,c:'#c4b068',phys:{dyn:0,col:'box'}},grano:{ab:'G',l:'Grano',u:0,c:'#a8895a',phys:{dyn:1,col:'mesh_convex'}},basura:{ab:'B',l:'Basura',u:0,c:'#d4593a',phys:{dyn:1,col:'mesh_convex'}},maquina:{ab:'M',l:'Máquina',u:0,c:'#6a9eb8',phys:{dyn:0,col:'box'}},cliente:{ab:'Cl',l:'Cliente',u:0,c:'#c478c4',phys:{dyn:1,col:'capsule'}},explorador:{ab:'E',l:'Explor.',u:0,c:'#78c4c4',phys:{dyn:1,col:'capsule'}},luz:{ab:'L',l:'Luz',u:0,c:'#f0c850',light:1}};
+// Tipos que el juego necesita sí o sí. El resto sale del catálogo que
+// publica Unity, así la paleta refleja los prefabs que existen de verdad.
+const OBJS={
+  spawn:{ab:'S',l:'Spawn',u:1,c:'#7aaa5a',fijo:1},
+  luz:{ab:'L',l:'Luz',u:0,c:'#f0c850',light:1,fijo:1}
+};
+const PALETA_COLORES=['#e08c4a','#9aab6a','#6a9eb8','#c478c4','#c4b068','#d4593a','#78c4c4','#a8895a'];
+const CAT_FIS={mueble:{dyn:0,col:'mesh_convex'},deco:{dyn:0,col:'none'},
+               gameplay:{dyn:1,col:'mesh_convex'},npc:{dyn:1,col:'capsule'},
+               portal:{dyn:0,col:'box'}};
 const $=id=>document.getElementById(id);
 // Devuelve la base del servidor: acepta IP simple (192.168.1.37) o URL completa (https://x.trycloudflare.com)
 function srvURL(){
@@ -935,6 +930,7 @@ function selectTool(b){const prev=S.tool;S.tool=b.dataset.tool;document.querySel
   $('grassPanel').classList.toggle('on',isGrassMode());
   if(isGrassMode()&&!G.canvas){initGrass();grassResize();}
   const H={select:'Selecciona · Arrastra para mover',delete:'Toca un objeto para borrar',spawn:'Coloca el Spawn',taza:'Coloca la Taza',carro_cafe:'Carro de café',grano:'Grano de café',basura:'Vaso de basura',maquina:'Máquina expendedora',cliente:'Cliente',explorador:'Explorador',luz:'Coloca una luz · ajusta color e intensidad',grass_paint:'Pinta zonas de césped',grass_erase:'Borra césped'};if(E3.on)mostrarHint3D();
+  pintarFijados();
   $('tip').textContent=H[S.tool]||(OBJS[S.tool]&&OBJS[S.tool].custom?`Coloca ${OBJS[S.tool].l} · mantén pulsado el icono para editar`:'');}
 document.querySelectorAll('.tool:not(.tool-add)').forEach(b=>b.addEventListener('click',()=>selectTool(b)));
 let pts={};
@@ -1037,7 +1033,7 @@ $('setX').addEventListener('click',()=>$('setOv').classList.add('hide'));
 $('setSave').addEventListener('click',()=>{const k=$('keyIn').value.trim(),fb=$('fbIn').value.trim(),ip=$('ipIn').value.trim();if(k)localStorage.setItem('anthropicKey',k);if(ip&&ip!==S.ip){S.ip=ip;localStorage.setItem('ip',ip);renderConns();connect();}if(fb){try{const c=JSON.parse(fb);localStorage.setItem('fbConfig',fb);initFB(c);}catch(e){toast('Firebase config inválido');return;}}toast('Guardado');$('setOv').classList.add('hide');});
 
 // FIREBASE
-function initFB(c){try{let app;try{app=firebase.app(c.projectId);}catch(e){app=firebase.initializeApp(c,c.projectId);}S.db=firebase.firestore(app);loadChats();loadLevels();loadCustom();}catch(e){toast('Error Firebase');}}
+function initFB(c){try{let app;try{app=firebase.app(c.projectId);}catch(e){app=firebase.initializeApp(c,c.projectId);}S.db=firebase.firestore(app);loadChats();loadLevels();}catch(e){toast('Error Firebase');}}
 const savedFB=localStorage.getItem('fbConfig');if(savedFB){try{initFB(JSON.parse(savedFB));}catch(e){}}
 
 
@@ -1094,8 +1090,7 @@ async function cargarThumbs(){
     const d=await r.json();
     THUMBS.disponibles=new Set(d.thumbs||[]);
     THUMBS.cargado=true;
-    if(THUMBS.disponibles.size){
-      renderCustomTools();render();
+    if(THUMBS.disponibles.size){render();
       if(E3.on)refrescar3D();
     }
   }catch(e){}
@@ -1408,6 +1403,7 @@ function colocar3D(cx,cy){
   if(d.cat==='portal')o.portal={target:'',entry:'spawn',mode:'tunnel'};
   S.objects.push(o);
   S.sel=o.id;
+  sumarUso(t);pintarFijados();
   refrescar3D();selPanel();chips();
   edAbrir(o,true);
 }
@@ -1831,81 +1827,137 @@ function drawScaleRuler(){
   cx.restore();
 }
 
-// ─── BIBLIOTECA DE OBJETOS PROPIOS ──────────────────────────────────────────
-const CAT_DEFAULTS={mueble:{dyn:0,col:'mesh_convex'},deco:{dyn:0,col:'none'},gameplay:{dyn:1,col:'mesh_convex'},npc:{dyn:1,col:'capsule'},portal:{dyn:0,col:'box'}};
-let custom=[],editingCust=null;
 
-function slugType(n){return 'c_'+n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');}
-function initials(n){const w=n.trim().split(/\s+/);return (w.length>1?w[0][0]+w[1][0]:n.slice(0,2)).toUpperCase();}
+// ─── CATÁLOGO DE OBJETOS ────────────────────────────────────────────────────
+// La paleta la define Unity: son los prefabs que existen de verdad.
+const CAT={items:[],cargado:false,filtro:'',cat:'todos'};
 
-function registerCustom(c){
-  OBJS[c.type]={ab:c.ab,l:c.name,u:0,c:c.color,phys:{...(CAT_DEFAULTS[c.cat]||CAT_DEFAULTS.mueble)},custom:1,cat:c.cat};
+function usos(){try{return JSON.parse(localStorage.getItem('usos')||'{}');}catch(e){return {};}}
+function sumarUso(t){const u=usos();u[t]=(u[t]||0)+1;localStorage.setItem('usos',JSON.stringify(u));}
+function fijados(){try{return JSON.parse(localStorage.getItem('fijados')||'[]');}catch(e){return [];}}
+function guardarFijados(f){localStorage.setItem('fijados',JSON.stringify(f));}
+
+async function cargarCatalogo(){
+  if(!S.ip||!S.conn)return;
+  try{
+    const r=await fetch(`${srvURL()}/catalog`,{signal:AbortSignal.timeout(8000)});
+    if(!r.ok)return;
+    const d=await r.json();
+    CAT.items=(d.items||[]).filter(i=>i&&i.type);
+    CAT.cargado=true;
+    // Registrar cada objeto del catálogo como tipo colocable
+    CAT.items.forEach((it,i)=>{
+      if(OBJS[it.type]&&OBJS[it.type].fijo)return;
+      const ini=(it.label||it.type).replace(/[^a-zA-ZÀ-ÿ0-9 ]/g,' ').trim().split(/\s+/);
+      OBJS[it.type]={
+        ab:(ini.length>1?ini[0][0]+ini[1][0]:(it.label||it.type).slice(0,2)).toUpperCase(),
+        l:it.label||it.type,u:0,
+        c:PALETA_COLORES[i%PALETA_COLORES.length],
+        cat:it.category||'mueble',
+        phys:{...(CAT_FIS[it.category]||CAT_FIS.mueble)}
+      };
+      if(it.category==='portal')OBJS[it.type].cat='portal';
+    });
+    pintarFijados();
+    if(!$('bibOv').classList.contains('hide'))pintarBiblioteca();
+  }catch(e){}
 }
-function renderCustomTools(){
-  const el=$('customTools');if(!el)return;
-  el.innerHTML=custom.map(c=>{const u=urlThumb(c.type);const ic=u?`<img src="${u}" style="width:22px;height:22px;object-fit:contain;border-radius:5px;background:rgba(0,0,0,.25)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${c.ab}',style:'display:inline-flex;width:19px;height:19px;border-radius:6px;background:${c.color};color:#1a1208;font-size:9px;font-weight:700;align-items:center;justify-content:center'}))">`:`<span style="display:inline-flex;width:19px;height:19px;border-radius:6px;background:${c.color};color:#1a1208;font-size:9px;font-weight:700;align-items:center;justify-content:center;font-family:'Space Grotesk'">${c.ab}</span>`;return `<div class="tool" data-tool="${c.type}" data-cust="${c.type}"><div class="tool-ic">${ic}</div><div class="tool-tx">${esc(c.name.slice(0,7))}</div></div>`;}).join('');
-  el.querySelectorAll('.tool').forEach(b=>{
-    b.addEventListener('click',()=>selectTool(b));
-    let t=null;
-    b.addEventListener('pointerdown',()=>{t=setTimeout(()=>openCustModal(b.dataset.cust),550);});
-    ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(t)));
-  });
+
+/// Los más usados, más los que hayas fijado a mano
+function listaFijados(){
+  const f=fijados(), u=usos();
+  const enCat=t=>CAT.items.some(i=>i.type===t)||OBJS[t];
+  const pin=f.filter(enCat);
+  const resto=Object.keys(u)
+    .filter(t=>enCat(t)&&!pin.includes(t)&&!(OBJS[t]&&OBJS[t].fijo))
+    .sort((a,b)=>u[b]-u[a]).slice(0,8-pin.length);
+  return [...pin,...resto].slice(0,8);
 }
-function openCustModal(type){
-  editingCust=type||null;
-  const c=type?custom.find(x=>x.type===type):null;
-  $('custName').value=c?c.name:'';
-  $('custCat').value=c?c.cat:'mueble';
-  $('custColor').value=c?c.color:'#c4b068';
-  $('custDel').style.display=c?'block':'none';
-  document.querySelector('#custOv .sheet-t').textContent=c?'Editar objeto':'Nuevo objeto';
-  $('custOv').classList.remove('hide');
+
+function iconoDe(t){
+  const d=OBJS[t]||{ab:'?',c:'#888'};
+  const url=urlThumb(t);
+  return url
+    ? `<img src="${url}" style="width:24px;height:24px;object-fit:contain;border-radius:6px;background:rgba(0,0,0,.25)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${d.ab}',className:'bib-im-ph',style:'width:22px;height:22px;font-size:9px;background:${d.c}'}))">`
+    : `<span style="display:inline-flex;width:22px;height:22px;border-radius:6px;background:${d.c};color:#1a1208;font-size:9px;font-weight:700;align-items:center;justify-content:center;font-family:'Space Grotesk'">${d.ab}</span>`;
 }
-async function saveCustom(){
-  const name=$('custName').value.trim();
-  if(!name){toast('Ponle un nombre');return;}
-  const cat=$('custCat').value,color=$('custColor').value;
-  if(editingCust){
-    const c=custom.find(x=>x.type===editingCust);
-    if(c){c.name=name;c.cat=cat;c.color=color;c.ab=initials(name);registerCustom(c);}
-  }else{
-    const type=slugType(name);
-    if(OBJS[type]){toast('Ya existe un objeto con ese nombre');return;}
-    const c={type,name,cat,color,ab:initials(name)};
-    custom.push(c);registerCustom(c);
+
+function pintarFijados(){
+  const el=$('fijados');if(!el)return;
+  const lista=listaFijados();
+  if(!lista.length){
+    el.innerHTML=CAT.cargado
+      ? '<div style="font-size:8px;color:var(--text-dim);text-align:center;padding:6px 4px;line-height:1.4">Abre<br>Todos</div>'
+      : '<div style="font-size:8px;color:var(--text-dim);text-align:center;padding:6px 4px;line-height:1.4">Conecta<br>al PC</div>';
+    return;
   }
-  renderCustomTools();render();
-  $('custOv').classList.add('hide');
-  await persistCustom();
+  el.innerHTML=lista.map(t=>{
+    const d=OBJS[t]||{l:t};
+    return `<div class="tool ${S.tool===t?'on':''}" data-tool="${t}"><div class="tool-ic">${iconoDe(t)}</div><div class="tool-tx">${esc((d.l||t).slice(0,7))}</div></div>`;
+  }).join('');
+  el.querySelectorAll('.tool').forEach(b=>b.addEventListener('click',()=>selectTool(b)));
 }
-async function delCustom(){
-  if(!editingCust)return;
-  const inUse=S.objects.filter(o=>o.type===editingCust).length;
-  if(!confirm(inUse?`Hay ${inUse} en este nivel. ¿Eliminar el tipo y sus objetos?`:'¿Eliminar este objeto de la biblioteca?'))return;
-  S.objects=S.objects.filter(o=>o.type!==editingCust);
-  custom=custom.filter(c=>c.type!==editingCust);
-  delete OBJS[editingCust];
-  if(S.tool===editingCust){S.tool='select';document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('on',x.dataset.tool==='select'));}
-  S.sel=null;selPanel();renderCustomTools();render();
-  $('custOv').classList.add('hide');
-  await persistCustom();
+
+// ── Biblioteca con buscador ────────────────────────────────────────────────
+function pintarBiblioteca(){
+  const cats=['todos',...new Set(CAT.items.map(i=>i.category||'mueble'))];
+  $('bibCats').innerHTML=cats.map(k=>
+    `<div class="bib-cat ${CAT.cat===k?'on':''}" data-c="${k}">${k}</div>`).join('');
+  $('bibCats').querySelectorAll('.bib-cat').forEach(b=>b.addEventListener('click',()=>{
+    CAT.cat=b.dataset.c;pintarBiblioteca();
+  }));
+
+  const f=CAT.filtro.toLowerCase();
+  const pin=fijados();
+  const vis=CAT.items.filter(i=>
+    (CAT.cat==='todos'||(i.category||'mueble')===CAT.cat) &&
+    (!f||(i.label||'').toLowerCase().includes(f)||i.type.toLowerCase().includes(f)));
+
+  const g=$('bibGrid');
+  if(!vis.length){
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1">${
+      CAT.cargado?'Nada coincide':'Conecta al PC y publica el catálogo desde Unity'}</div>`;
+    return;
+  }
+  g.innerHTML=vis.map(i=>{
+    const d=OBJS[i.type]||{ab:'?',c:'#888'};
+    const u=urlThumb(i.type);
+    const im=u?`<img class="bib-im" src="${u}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'${d.ab}',className:'bib-im-ph',style:'background:${d.c}'}))">`
+              :`<div class="bib-im-ph" style="background:${d.c}">${d.ab}</div>`;
+    const esPin=pin.includes(i.type);
+    return `<div class="bib-it ${S.tool===i.type?'on':''}" data-t="${i.type}">
+      <button class="bib-pin ${esPin?'on':''}" data-pin="${i.type}" title="Fijar">
+        <svg viewBox="0 0 24 24" fill="${esPin?'currentColor':'none'}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 17-5.5 3 1-6.1L3 9.6l6.1-.9L12 3l2.9 5.7 6.1.9-4.5 4.3 1 6.1z"/></svg>
+      </button>
+      ${im}<div class="bib-nm">${esc(i.label||i.type)}</div></div>`;
+  }).join('');
+
+  g.querySelectorAll('.bib-it').forEach(d=>d.addEventListener('click',e=>{
+    if(e.target.closest('[data-pin]'))return;
+    const t=d.dataset.t;
+    S.tool=t;
+    document.querySelectorAll('.tool').forEach(x=>x.classList.remove('on'));
+    sumarUso(t);pintarFijados();
+    $('bibOv').classList.add('hide');
+    if(E3.on)mostrarHint3D();
+    toast('Coloca '+((OBJS[t]||{}).l||t));
+  }));
+  g.querySelectorAll('[data-pin]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();
+    const t=b.dataset.pin;let f=fijados();
+    f=f.includes(t)?f.filter(x=>x!==t):[...f,t].slice(0,8);
+    guardarFijados(f);pintarBiblioteca();pintarFijados();
+  }));
 }
-async function persistCustom(){
-  localStorage.setItem('customObjs',JSON.stringify(custom));
-  if(S.db){try{await S.db.collection('library').doc('objects').set({items:custom});}catch(e){}}
-}
-async function loadCustom(){
-  let loaded=null;
-  if(S.db){try{const d=await S.db.collection('library').doc('objects').get();if(d.exists)loaded=d.data().items;}catch(e){}}
-  if(!loaded){try{loaded=JSON.parse(localStorage.getItem('customObjs')||'[]');}catch(e){loaded=[];}}
-  custom=loaded||[];
-  custom.forEach(registerCustom);
-  renderCustomTools();render();
-}
-$('addCustomBtn').addEventListener('click',()=>openCustModal(null));
-$('custX').addEventListener('click',()=>$('custOv').classList.add('hide'));
-$('custSave').addEventListener('click',saveCustom);
-$('custDel').addEventListener('click',delCustom);
+
+$('abrirBib').addEventListener('click',()=>{
+  CAT.filtro='';$('bibBuscar').value='';
+  pintarBiblioteca();
+  $('bibOv').classList.remove('hide');
+});
+$('bibX').addEventListener('click',()=>$('bibOv').classList.add('hide'));
+$('bibBuscar').addEventListener('input',e=>{CAT.filtro=e.target.value;pintarBiblioteca();});
+
 
 // ─── CONSOLA UNITY ───────────────────────────────────────────────────────────
 let consoleOpen=false,consoleSince=0,consolePoll=null;
@@ -2032,7 +2084,7 @@ $('lvlDup').addEventListener('click',async()=>{
 // PC
 if(S.ip)$('ipIn').value=S.ip;
 function setConn(s,t){const d1=$('dot'),d2=$('dot2');if(d1)d1.className='dot '+s;if(d2)d2.className='dot '+s;}
-async function connect(){if(!S.ip)return;setConn('wait','');try{const r=await fetch(`http://${ip}:7845/files`,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw 0;const d=await r.json();S.files=d.files||[];S.conn=true;setConn('ok','');for(const f of S.files){if(!f.content){try{const rr=await fetch(`${srvURL()}/file?path=${encodeURIComponent(f.path)}`);f.content=(await rr.json()).content||'';}catch(e){f.content='';}}}toast(`${S.files.length} scripts cargados`);renderScripts();cargarThumbs();cargarGeos();if(consoleOpen)startConsolePoll();}catch(e){S.conn=false;setConn('err','');}}
+async function connect(){if(!S.ip)return;setConn('wait','');try{const r=await fetch(`http://${ip}:7845/files`,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw 0;const d=await r.json();S.files=d.files||[];S.conn=true;setConn('ok','');for(const f of S.files){if(!f.content){try{const rr=await fetch(`${srvURL()}/file?path=${encodeURIComponent(f.path)}`);f.content=(await rr.json()).content||'';}catch(e){f.content='';}}}toast(`${S.files.length} scripts cargados`);renderScripts();cargarThumbs();cargarGeos();cargarCatalogo();if(consoleOpen)startConsolePoll();}catch(e){S.conn=false;setConn('err','');}}
 
 // SCRIPTS
 function renderScripts(){const el=$('scrList');if(!S.conn){el.innerHTML='<div class="empty">Conecta al PC en Ajustes<br>para ver tus scripts</div>';return;}el.innerHTML=S.files.length?S.files.map(f=>`<div class="srow ${f.modified?'mod':''}" data-p="${f.path}"><svg style="width:15px;height:15px;color:var(--text-mid)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="sname">${esc(f.name)}</span><span class="ssize">${f.size}</span></div>`).join(''):'<div class="empty">Sin scripts en el proyecto</div>';el.querySelectorAll('.srow').forEach(r=>r.addEventListener('click',()=>{const f=S.files.find(x=>x.path===r.dataset.p);if(!f)return;$('svT').textContent=f.name;$('svCode').textContent=f.content||'(vacío)';$('svOv').classList.remove('hide');}));}
@@ -2511,7 +2563,7 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
 
 // INIT
 $('view3dBtn').disabled=true;
-initGrass();resize();fit();render();loadCustom();loadConns();
+initGrass();resize();fit();render();loadConns();
 if(S.ip)connect();
 if(!savedFB){S.chatId='local_0';welcome();}
 </script>
