@@ -59,6 +59,8 @@ header{
 .hicon{width:34px;height:34px;border-radius:9px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .hicon:active{transform:scale(.92);}
 .hicon-p{background:var(--accent);color:#1a1208;border-color:var(--accent);}
+.hicon-u{border-color:var(--sage);color:var(--sage);background:rgba(154,171,106,.12);}
+.hicon-u.trabajando{opacity:.55;}
 .hicon svg{width:17px;height:17px;}
 .gear{width:34px;height:34px;border-radius:9px;border:none;background:transparent;color:var(--text-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .gear svg{width:20px;height:20px;}
@@ -437,6 +439,7 @@ header{
   <div style="display:flex;align-items:center;gap:6px;">
     <button class="hicon" id="undoBtn" title="Deshacer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>
     <button class="hicon hicon-p" id="saveBtn" title="Guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
+    <button class="hicon hicon-u" id="unityBtn" title="Montar en Unity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></button>
     <button class="hicon" id="jsonBtn" title="Exportar JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/></svg></button>
     <button class="gear" id="gearBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
@@ -470,19 +473,20 @@ header{
         <div class="gp-layers" id="gpLayers"></div>
         <div class="gp-row">
           <span class="gp-lbl">Pincel</span>
-          <input type="range" id="brushSize" min="8" max="80" value="30">
+          <input type="range" id="brushSize" min="4" max="80" value="26">
         </div>
         <div class="gp-row">
-          <span class="gp-lbl">Altura</span>
-          <input type="range" id="brushOpac" min="20" max="100" value="100">
+          <span class="gp-lbl" id="gpIntLbl">Altura</span>
+          <input type="range" id="brushOpac" min="10" max="100" value="100">
         </div>
-        <div class="gp-modes">
-          <div class="gp-mode on" data-gm="brush">Pincel</div>
-          <div class="gp-mode" data-gm="poly">Polígono</div>
+        <div class="gp-row">
+          <span class="gp-lbl">Borde</span>
+          <input type="range" id="brushSoft" min="0" max="100" value="55">
         </div>
-        <button class="gp-add" id="gpFinishPoly" style="display:none;margin-bottom:8px;border-style:solid;border-color:var(--accent);color:var(--accent);">Cerrar polígono</button>
         <button class="gp-add" id="gpAddLayer">+ Capa</button>
-        <div style="font-size:8px;color:var(--text-dim);text-align:center;margin-top:6px;">Mantén pulsada una capa para renombrarla</div>
+        <div style="font-size:8px;color:var(--text-dim);text-align:center;margin-top:6px;line-height:1.5;">
+          Mantén pulsada una capa para renombrarla<br>o cambiar su tipo
+        </div>
       </div>
       <div class="drop" id="drop">
         <div class="drop-card" id="dropCard">
@@ -832,7 +836,7 @@ function switchTab(t){
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   $(t+'View').classList.add('active');
-  ['jsonBtn','saveBtn','undoBtn'].forEach(b=>{const el=$(b);if(el)el.style.display=t==='level'?'':'none';});
+  ['jsonBtn','saveBtn','undoBtn','unityBtn'].forEach(b=>{const el=$(b);if(el)el.style.display=t==='level'?'':'none';});
   if(t==='level'){resize();sincronizar3D();}
   if(t==='scripts')renderScripts();
   if(t==='mesh'){initMeshViewer();setTimeout(resizeMeshViewer,50);}
@@ -841,7 +845,7 @@ document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>swit
 
 // CANVAS
 const cv=$('cv'),cx=cv.getContext('2d'),stage=$('stage');
-function resize(){const r=stage.getBoundingClientRect();cv.width=r.width;cv.height=r.height;S.cW=r.width;S.cH=r.height;grassResize();render();}
+function resize(){const r=stage.getBoundingClientRect();cv.width=r.width;cv.height=r.height;S.cW=r.width;S.cH=r.height;render();}
 window.addEventListener('resize',()=>{resize();resizeMeshViewer();resize3D();});
 function s2w(x,y){return{x:(x-S.cam.x)/S.cam.z,y:(y-S.cam.y)/S.cam.z};}
 function render(){
@@ -853,7 +857,7 @@ function render(){
   S.objects.forEach(o=>{if(OBJS[o.type]&&OBJS[o.type].light&&o.light){const rad=o.light.range*14*(o.light.intensity*.6+.4);const g=cx.createRadialGradient(o.wx,o.wy,0,o.wx,o.wy,rad);const col=o.light.color;g.addColorStop(0,col+'55');g.addColorStop(1,col+'00');cx.fillStyle=g;cx.beginPath();cx.arc(o.wx,o.wy,rad,0,7);cx.fill();}});
   S.objects.forEach(o=>{const d=OBJS[o.type],sl=o.id===S.sel;const ic=(d.light&&o.light)?o.light.color:d.c;cx.beginPath();cx.arc(o.wx,o.wy+3,R,0,7);cx.fillStyle='rgba(0,0,0,.35)';cx.fill();cx.beginPath();cx.arc(o.wx,o.wy,R,0,7);cx.fillStyle=sl?ic:'rgba(13,11,9,.9)';cx.fill();cx.lineWidth=sl?2.5:1.5;cx.strokeStyle=sl?'#fff':ic;cx.stroke();cx.font='700 15px Space Grotesk';cx.textAlign='center';cx.textBaseline='middle';cx.fillStyle=sl?'#1a1208':ic;cx.fillText(d.ab,o.wx,o.wy);if(d.cat==='portal'){cx.beginPath();cx.arc(o.wx,o.wy,R+5,0,7);cx.strokeStyle=ic;cx.lineWidth=1;cx.setLineDash([3,3]);cx.stroke();cx.setLineDash([]);if(o.portal&&o.portal.targetName){cx.font='600 8px Space Grotesk';cx.fillStyle=ic;cx.textAlign='center';cx.textBaseline='top';cx.fillText('→ '+o.portal.targetName,o.wx,o.wy+R+(sl?15:5));}}
   if(sl){cx.font='600 9px Space Grotesk';cx.fillStyle='#fff';cx.textBaseline='top';cx.fillText(d.l,o.wx,o.wy+R+4);}});
-  cx.restore();drawScaleRuler();chips();if(G.ctx)drawGrass();
+  cx.restore();drawScaleRuler();chips();
 }
 function hit(x,y){for(let i=S.objects.length-1;i>=0;i--){const o=S.objects[i];if((o.wx-x)**2+(o.wy-y)**2<400)return o;}return null;}
 function place(x,y){const t=S.tool,d=OBJS[t];if(!d)return;pushUndo();if(d.u){const e=S.objects.find(o=>o.type===t);if(e){e.wx=x;e.wy=y;S.sel=e.id;render();selPanel();return;}}const o={id:S.nextId++,type:t,wx:x,wy:y,note:''};if(OBJS[t]&&OBJS[t].light)o.light={kind:'point',color:'#f0c850',intensity:1,range:5};if(OBJS[t]&&OBJS[t].phys)o.phys={...OBJS[t].phys};if(OBJS[t]&&OBJS[t].cat==='portal')o.portal={target:'',entry:'spawn',mode:'tunnel'};S.objects.push(o);S.sel=o.id;render();selPanel();$('drop').classList.add('hide');}
@@ -926,9 +930,13 @@ $('objDel').addEventListener('click',()=>{if(S.sel){pushUndo();S.objects=S.objec
 function chips(){const c={};S.objects.forEach(o=>c[o.type]=(c[o.type]||0)+1);$('chips')&&($('chips').innerHTML=Object.entries(c).map(([t,n])=>`<div class="chip"><span style="width:7px;height:7px;border-radius:50%;background:${OBJS[t].c};display:inline-block"></span>${OBJS[t].l} <b style="color:var(--text)">${n}</b></div>`).join('')||'');}
 function selectTool(b){const prev=S.tool;S.tool=b.dataset.tool;document.querySelectorAll('.tool').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(S.tool==='select'||S.tool==='delete'){S.sel=null;selPanel();render();}
   // grass panel toggle
-  if((prev==='grass_paint'||prev==='grass_erase')&&!isGrassMode())finishPoly();
-  $('grassPanel').classList.toggle('on',isGrassMode());
-  if(isGrassMode()&&!G.canvas){initGrass();grassResize();}
+  $('grassPanel').classList.toggle('on',esModoPintura());
+  if(esModoPintura()){
+    initPintura();
+    if(E3.on)asegurarOverlay();
+    else toast('Activa la vista 3D para pintar sobre el modelo');
+    actualizarEtiquetaInt();
+  }
   const H={select:'Selecciona · Arrastra para mover',delete:'Toca un objeto para borrar',spawn:'Coloca el Spawn',taza:'Coloca la Taza',carro_cafe:'Carro de café',grano:'Grano de café',basura:'Vaso de basura',maquina:'Máquina expendedora',cliente:'Cliente',explorador:'Explorador',luz:'Coloca una luz · ajusta color e intensidad',grass_paint:'Pinta zonas de césped',grass_erase:'Borra césped'};if(E3.on)mostrarHint3D();
   pintarFijados();
   $('tip').textContent=H[S.tool]||(OBJS[S.tool]&&OBJS[S.tool].custom?`Coloca ${OBJS[S.tool].l} · mantén pulsado el icono para editar`:'');}
@@ -938,19 +946,11 @@ cv.addEventListener('pointerdown',e=>{e.preventDefault();pts[e.pointerId]={x:e.c
   // Two fingers: cancel any pending placement, enter gesture mode
   if(Object.keys(pts).length>=2){S.drag.on=false;S.pending=null;return;}
   const r=cv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,w=s2w(sx,sy);
-  if(isGrassMode()){
-    if(Object.keys(pts).length>=2){G.painting=false;return;}
-    if(G.mode==='brush'){G.painting=true;const er=S.tool==='grass_erase';pushUndo();G.curStroke={type:'brush',size:G.brush/S.cam.z,opac:er?0:G.opac,pts:[{x:w.x,y:w.y}],erase:er};if(er){eraseAt(w.x,w.y);}else{G.layers[G.active].strokes.push(G.curStroke);}drawGrass();}
-    else if(G.mode==='poly'){G.poly.push({x:w.x,y:w.y});drawGrass();}
-    S.drag={on:true,pan:0};
-    return;
-  }
   if(S.tool==='select'){const h=hit(w.x,w.y);if(h){S.sel=h.id;render();selPanel();S.drag={on:true,pan:0,sx,sy,ox:h.wx,oy:h.wy,id:h.id,moved:false};}else{S.sel=null;selPanel();render();S.drag={on:true,pan:1,sx,sy,cx:S.cam.x,cy:S.cam.y};}}
   else if(S.tool==='delete'){const h=hit(w.x,w.y);if(h){pushUndo();S.objects=S.objects.filter(o=>o.id!==h.id);render();}}
   else if(OBJS[S.tool]){S.pending={wx:w.x,wy:w.y,sx,sy};S.drag={on:true,pan:1,sx,sy,cx:S.cam.x,cy:S.cam.y};}});
 cv.addEventListener('pointermove',e=>{e.preventDefault();const k=Object.keys(pts);if(k.length===2){const id=k.map(Number),p0=e.pointerId===id[0]?{x:e.clientX,y:e.clientY}:pts[id[0]],p1=e.pointerId===id[1]?{x:e.clientX,y:e.clientY}:pts[id[1]],dd=Math.hypot(p0.x-p1.x,p0.y-p1.y);if(S.drag.pd){const dl=dd/S.drag.pd,r=cv.getBoundingClientRect(),mx=(p0.x+p1.x)/2-r.left,my=(p0.y+p1.y)/2-r.top,wx=(mx-S.cam.x)/S.cam.z,wy=(my-S.cam.y)/S.cam.z;S.cam.z=Math.min(5,Math.max(.2,S.cam.z*dl));S.cam.x=mx-wx*S.cam.z;S.cam.y=my-wy*S.cam.z;render();}S.drag.pd=dd;pts[e.pointerId]={x:e.clientX,y:e.clientY};return;}S.drag.pd=0;const r=cv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,w=s2w(sx,sy);if(!S.drag.on)return;if(S.drag.pan&&!S.pending){S.cam.x=S.drag.cx+(sx-S.drag.sx);S.cam.y=S.drag.cy+(sy-S.drag.sy);render();}else if(S.pending){const mv=Math.hypot(sx-S.pending.sx,sy-S.pending.sy);if(mv>10){S.cam.x=S.drag.cx+(sx-S.drag.sx);S.cam.y=S.drag.cy+(sy-S.drag.sy);S.pending=null;render();}}else if(S.drag.id){if(!S.drag.moved){S.drag.moved=true;pushUndo();}const o=S.objects.find(o=>o.id===S.drag.id);if(o){const sw=s2w(S.drag.sx,S.drag.sy);o.wx=S.drag.ox+(w.x-sw.x);o.wy=S.drag.oy+(w.y-sw.y);render();}}pts[e.pointerId]={x:e.clientX,y:e.clientY};});
 cv.addEventListener('pointerup',e=>{
-  if(isGrassMode()&&G.painting){G.painting=false;G.dirtyGrass=true;}
   if(S.pending){const r=cv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top;const moved=Math.hypot(sx-S.pending.sx,sy-S.pending.sy);if(moved<10&&Object.keys(pts).length<=1){place(S.pending.wx,S.pending.wy);}S.pending=null;}
   delete pts[e.pointerId];S.drag.on=false;S.drag.pd=0;});
 cv.addEventListener('pointercancel',e=>{S.pending=null;delete pts[e.pointerId];S.drag.on=false;});
@@ -964,65 +964,234 @@ $('mapTrig').addEventListener('click',()=>$('mapfi').click());
 $('mapfi').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const i=new Image();i.onload=()=>{S.mapImg=i;$('drop').classList.add('hide');fit();render();toast('Mapa cargado');};i.src=URL.createObjectURL(f);});
 
 
-// ─── GRASS PAINTER ───
-const G={layers:[],active:0,mode:'brush',brush:30,opac:1,painting:false,poly:[],canvas:null,ctx:null};
-const GRASS_COLORS=['#7aaa5a','#c478c4','#d9b34a','#6a9eb8','#d4593a'];
-function initGrass(){
-  G.canvas=$('grassCv');G.ctx=G.canvas.getContext('2d');
-  if(!G.layers.length){G.layers=[{name:'Césped',color:GRASS_COLORS[0],vis:true,strokes:[]},{name:'Flores',color:GRASS_COLORS[1],vis:true,strokes:[]}];}
+// ─── PINTURA SOBRE LA MALLA ─────────────────────────────────────────────────
+// Se pinta en el espacio UV del modelo: al tocar la malla el rayo devuelve la
+// coordenada de textura, y ahí se marca. La máscara resultante es directamente
+// la que consume Unity, sin conversiones ni proyecciones.
+const TAM_MASCARA=1024;
+const P={capas:[],activa:0,brush:26,inten:1,soft:.55,
+         pintando:false,ultimoUV:null,comp:null,compCtx:null,compTex:null,overlay:null};
+const COLORES_CAPA=['#7aaa5a','#c478c4','#d9b34a','#6a9eb8','#d4593a','#8a9eff'];
+const TIPOS_CAPA={cesped:{nom:'Césped',int:'Altura'},brillo:{nom:'Brillo',int:'Brillo'}};
+
+function nuevaCapa(nombre,tipo,color){
+  const cv=document.createElement('canvas');
+  cv.width=cv.height=TAM_MASCARA;
+  const cx2=cv.getContext('2d');
+  cx2.fillStyle='#000';cx2.fillRect(0,0,TAM_MASCARA,TAM_MASCARA);
+  return {name:nombre,tipo:tipo||'cesped',color:color||COLORES_CAPA[0],vis:true,cv,ctx:cx2,vacia:true};
+}
+
+function initPintura(){
+  if(P.capas.length)return;
+  P.capas=[nuevaCapa('Césped','cesped',COLORES_CAPA[0]),
+           nuevaCapa('Flores','cesped',COLORES_CAPA[1])];
+  P.comp=document.createElement('canvas');
+  P.comp.width=P.comp.height=TAM_MASCARA;
+  P.compCtx=P.comp.getContext('2d');
   renderGrassLayers();
 }
+
+
+/// Restaura las capas de pintura guardadas con el nivel
+function cargarCapas(guardadas){
+  if(!guardadas||!guardadas.length){
+    P.capas=[];initPintura();return;
+  }
+  P.capas=guardadas.map(g=>{
+    const capa=nuevaCapa(g.name||'Capa',g.tipo||'cesped',g.color||COLORES_CAPA[0]);
+    capa.vis=g.vis!==false;
+    if(g.img){
+      capa.vacia=false;
+      const im=new Image();
+      im.onload=()=>{capa.ctx.drawImage(im,0,0,TAM_MASCARA,TAM_MASCARA);recomponer();};
+      im.src=g.img;
+    }
+    return capa;
+  });
+  P.activa=0;
+  renderGrassLayers();actualizarEtiquetaInt();recomponer();
+}
+
+function esModoPintura(){return S.tool==='grass_paint'||S.tool==='grass_erase';}
+
+/// Recompone la vista: cada capa con su color sobre el modelo
+function recomponer(){
+  if(!P.compCtx)return;
+  const x=P.compCtx;
+  x.clearRect(0,0,TAM_MASCARA,TAM_MASCARA);
+  for(const capa of P.capas){
+    if(!capa.vis||capa.vacia)continue;
+    // La máscara es en gris; se tiñe con el color de la capa
+    const tmp=document.createElement('canvas');
+    tmp.width=tmp.height=TAM_MASCARA;
+    const t=tmp.getContext('2d');
+    t.drawImage(capa.cv,0,0);
+    t.globalCompositeOperation='source-in';
+    t.fillStyle=capa.color;
+    t.fillRect(0,0,TAM_MASCARA,TAM_MASCARA);
+    x.globalAlpha=.72;
+    x.drawImage(tmp,0,0);
+    x.globalAlpha=1;
+  }
+  if(P.compTex)P.compTex.needsUpdate=true;
+}
+
+/// Capa transparente encima del modelo donde se ve lo pintado
+function asegurarOverlay(){
+  if(!E3.mesh||!P.comp)return;
+  if(P.overlay&&P.overlay.parent===E3.mesh)return;
+  if(P.overlay&&P.overlay.parent)P.overlay.parent.remove(P.overlay);
+  P.compTex=new THREE.CanvasTexture(P.comp);
+  P.compTex.flipY=false;    // el UV del OBJ ya viene con el origen arriba
+  const mat=new THREE.MeshBasicMaterial({
+    map:P.compTex,transparent:true,depthWrite:false,
+    polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  P.overlay=new THREE.Mesh(E3.mesh.geometry,mat);
+  P.overlay.renderOrder=1;
+  E3.mesh.add(P.overlay);
+  recomponer();
+}
+
+function quitarOverlay(){
+  if(P.overlay&&P.overlay.parent)P.overlay.parent.remove(P.overlay);
+}
+
+/// Marca un punto en la capa activa. u,v en 0..1
+function pintarUV(u,v,borrar){
+  const capa=P.capas[P.activa];
+  if(!capa)return;
+  const x=capa.ctx;
+  const px=u*TAM_MASCARA, py=v*TAM_MASCARA;
+  const r=P.brush*(TAM_MASCARA/1024);
+  const val=Math.round(P.inten*255);
+
+  x.globalCompositeOperation='source-over';
+  const g=x.createRadialGradient(px,py,r*(1-P.soft),px,py,r);
+  if(borrar){
+    x.globalCompositeOperation='destination-out';
+    g.addColorStop(0,'rgba(0,0,0,1)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+  }else{
+    const c255=`rgb(${val},${val},${val})`;
+    g.addColorStop(0,c255);
+    g.addColorStop(1,`rgba(${val},${val},${val},0)`);
+  }
+  x.fillStyle=g;
+  x.beginPath();x.arc(px,py,r,0,7);x.fill();
+  x.globalCompositeOperation='source-over';
+
+  if(!borrar)capa.vacia=false;
+}
+
+/// Traza entre dos puntos UV para que el trazo no salga a saltos
+function trazoUV(a,b,borrar){
+  const d=Math.hypot(b.x-a.x,b.y-a.y);
+  const pasos=Math.max(1,Math.ceil(d*TAM_MASCARA/(P.brush*0.5)));
+  for(let i=1;i<=pasos;i++){
+    const t=i/pasos;
+    pintarUV(a.x+(b.x-a.x)*t, a.y+(b.y-a.y)*t, borrar);
+  }
+}
+
+/// Se llama desde los gestos del editor 3D
+function pinceladaEn(cx,cy,continuar){
+  if(!E3.mesh)return false;
+  const r=E3.rend.domElement.getBoundingClientRect();
+  const v=new THREE.Vector2(((cx-r.left)/r.width)*2-1, -((cy-r.top)/r.height)*2+1);
+  E3.ray.setFromCamera(v,E3.cam);
+  const hits=E3.ray.intersectObject(E3.mesh,false);
+  if(!hits.length||!hits[0].uv){
+    if(!hits.length)return false;
+    toast('El modelo no tiene coordenadas de textura');
+    return false;
+  }
+  const uv={x:hits[0].uv.x,y:1-hits[0].uv.y};   // el canvas crece hacia abajo
+  const borrar=S.tool==='grass_erase';
+  if(continuar&&P.ultimoUV)trazoUV(P.ultimoUV,uv,borrar);
+  else pintarUV(uv.x,uv.y,borrar);
+  P.ultimoUV=uv;
+  recomponer();
+  S.dirty=true;updateSaveBtn();
+  return true;
+}
+
+// ── Panel de capas ──────────────────────────────────────────────────────────
 function renderGrassLayers(){
   const el=$('gpLayers');if(!el)return;
-  el.innerHTML=G.layers.map((l,i)=>`<div class="gp-layer ${i===G.active?'on':''}" data-i="${i}"><span class="gp-swatch" style="background:${l.color}"></span><span class="gp-name">${esc(l.name)}</span><button class="gp-vis" data-vis="${i}">${l.vis?'●':'○'}</button></div>`).join('');
+  el.innerHTML=P.capas.map((l,i)=>{
+    const t=TIPOS_CAPA[l.tipo]||TIPOS_CAPA.cesped;
+    return `<div class="gp-layer ${i===P.activa?'on':''}" data-i="${i}">
+      <span class="gp-swatch" style="background:${l.color}"></span>
+      <span class="gp-name">${esc(l.name)}<span style="opacity:.5;font-size:8px"> ${t.nom}</span></span>
+      <button class="gp-vis" data-vis="${i}">${l.vis?'●':'○'}</button></div>`;
+  }).join('');
+
   el.querySelectorAll('.gp-layer').forEach(d=>{
-    d.addEventListener('click',e=>{if(e.target.dataset.vis!==undefined)return;G.active=+d.dataset.i;renderGrassLayers();});
+    d.addEventListener('click',e=>{
+      if(e.target.dataset.vis!==undefined)return;
+      P.activa=+d.dataset.i;renderGrassLayers();actualizarEtiquetaInt();
+    });
     let lt=null;
-    d.addEventListener('pointerdown',()=>{lt=setTimeout(()=>{
-      const i=+d.dataset.i,cur=G.layers[i];
-      const nn=prompt('Nombre de la capa:',cur.name);
-      if(nn&&nn.trim()){cur.name=nn.trim().slice(0,18);renderGrassLayers();S.dirty=true;updateSaveBtn();}
-    },550);});
+    d.addEventListener('pointerdown',()=>{lt=setTimeout(()=>editarCapa(+d.dataset.i),550);});
     ['pointerup','pointerleave','pointercancel'].forEach(ev=>d.addEventListener(ev,()=>clearTimeout(lt)));
   });
-  el.querySelectorAll('[data-vis]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const i=+b.dataset.vis;G.layers[i].vis=!G.layers[i].vis;renderGrassLayers();drawGrass();}));
-}
-function grassResize(){if(!G.canvas)return;G.canvas.width=cv.width;G.canvas.height=cv.height;drawGrass();}
-function drawGrass(){
-  if(!G.ctx)return;
-  G.ctx.clearRect(0,0,G.canvas.width,G.canvas.height);
-  G.ctx.save();G.ctx.translate(S.cam.x,S.cam.y);G.ctx.scale(S.cam.z,S.cam.z);
-  G.layers.forEach(l=>{if(!l.vis)return;const rgb=hexRgb(l.color);l.strokes.forEach(st=>{
-    if(st.type==='brush'){G.ctx.strokeStyle=`rgba(${rgb},${st.opac*.5})`;G.ctx.lineWidth=st.size;G.ctx.lineCap='round';G.ctx.lineJoin='round';G.ctx.beginPath();st.pts.forEach((p,i)=>{if(i===0)G.ctx.moveTo(p.x,p.y);else G.ctx.lineTo(p.x,p.y);});G.ctx.stroke();}
-    else if(st.type==='poly'&&st.pts.length>2){G.ctx.fillStyle=`rgba(${rgb},${st.opac*.45})`;G.ctx.beginPath();st.pts.forEach((p,i)=>{if(i===0)G.ctx.moveTo(p.x,p.y);else G.ctx.lineTo(p.x,p.y);});G.ctx.closePath();G.ctx.fill();}
-  });});
-  // current polygon in progress
-  if(G.mode==='poly'&&G.poly.length){const rgb=hexRgb(G.layers[G.active].color);G.ctx.strokeStyle=`rgb(${rgb})`;G.ctx.lineWidth=2/S.cam.z;G.ctx.beginPath();G.poly.forEach((p,i)=>{if(i===0)G.ctx.moveTo(p.x,p.y);else G.ctx.lineTo(p.x,p.y);});G.ctx.stroke();G.poly.forEach(p=>{G.ctx.fillStyle=`rgb(${rgb})`;G.ctx.beginPath();G.ctx.arc(p.x,p.y,4/S.cam.z,0,7);G.ctx.fill();});}
-  G.ctx.restore();
+  el.querySelectorAll('[data-vis]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();
+    P.capas[+b.dataset.vis].vis=!P.capas[+b.dataset.vis].vis;
+    renderGrassLayers();recomponer();
+  }));
 }
 
-function eraseAt(x,y){const r=(G.brush/S.cam.z)/2;G.layers.forEach(l=>{l.strokes=l.strokes.filter(st=>{if(st.type==='brush')return !st.pts.some(p=>Math.hypot(p.x-x,p.y-y)<r);if(st.type==='poly'){return !pointInPoly(x,y,st.pts);}return true;});});}
-function pointInPoly(x,y,pts){let inside=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){if((pts[i].y>y)!==(pts[j].y>y)&&x<(pts[j].x-pts[i].x)*(y-pts[i].y)/(pts[j].y-pts[i].y)+pts[i].x)inside=!inside;}return inside;}
-function finishPoly(){if(G.mode==='poly'&&G.poly.length>2){pushUndo();G.layers[G.active].strokes.push({type:'poly',opac:G.opac,pts:G.poly.slice()});G.dirtyGrass=true;}G.poly=[];drawGrass();}
-function hexRgb(h){const n=parseInt(h.slice(1),16);return `${(n>>16)&255},${(n>>8)&255},${n&255}`;}
-function isGrassMode(){return S.tool==='grass_paint'||S.tool==='grass_erase';}
+function editarCapa(i){
+  const l=P.capas[i];if(!l)return;
+  const n=prompt('Nombre de la capa:',l.name);
+  if(n===null)return;
+  if(n.trim())l.name=n.trim().slice(0,18);
+  const t=prompt('Tipo — escribe "cesped" o "brillo":',l.tipo);
+  if(t&&TIPOS_CAPA[t.trim().toLowerCase()])l.tipo=t.trim().toLowerCase();
+  renderGrassLayers();actualizarEtiquetaInt();
+  S.dirty=true;updateSaveBtn();
+}
 
-// Grass panel controls
-$('brushSize')&&$('brushSize').addEventListener('input',e=>G.brush=+e.target.value);
-$('brushOpac')&&$('brushOpac').addEventListener('input',e=>G.opac=+e.target.value/100);
-document.querySelectorAll('.gp-mode').forEach(m=>m.addEventListener('click',()=>{if(G.mode==='poly')finishPoly();G.mode=m.dataset.gm;document.querySelectorAll('.gp-mode').forEach(x=>x.classList.remove('on'));m.classList.add('on');G.poly=[];const fb=$('gpFinishPoly');if(fb)fb.style.display=G.mode==='poly'?'block':'none';drawGrass();}));
-$('gpFinishPoly')&&$('gpFinishPoly').addEventListener('click',finishPoly);
-$('gpAddLayer')&&$('gpAddLayer').addEventListener('click',()=>{const n=G.layers.length;G.layers.push({name:'Capa '+(n+1),color:GRASS_COLORS[n%GRASS_COLORS.length],vis:true,strokes:[]});G.active=n;renderGrassLayers();});
+function actualizarEtiquetaInt(){
+  const l=P.capas[P.activa];
+  const t=TIPOS_CAPA[l?l.tipo:'cesped']||TIPOS_CAPA.cesped;
+  const e=$('gpIntLbl');if(e)e.textContent=t.int;
+}
 
+$('brushSize')&&$('brushSize').addEventListener('input',e=>P.brush=+e.target.value);
+$('brushOpac')&&$('brushOpac').addEventListener('input',e=>P.inten=+e.target.value/100);
+$('brushSoft')&&$('brushSoft').addEventListener('input',e=>P.soft=+e.target.value/100);
+$('gpAddLayer')&&$('gpAddLayer').addEventListener('click',()=>{
+  const n=P.capas.length;
+  P.capas.push(nuevaCapa('Capa '+(n+1),'cesped',COLORES_CAPA[n%COLORES_CAPA.length]));
+  P.activa=n;renderGrassLayers();actualizarEtiquetaInt();
+});
+
+/// PNG en escala de grises listo para Unity
+function mascaraPNG(capa){
+  const cv=document.createElement('canvas');
+  cv.width=cv.height=TAM_MASCARA;
+  const x=cv.getContext('2d');
+  x.fillStyle='#000';x.fillRect(0,0,TAM_MASCARA,TAM_MASCARA);
+  x.drawImage(capa.cv,0,0);
+  return cv.toDataURL('image/png');
+}
+
+function capasConContenido(){return P.capas.filter(l=>!l.vacia);}
+function nombreArchivoCapa(l){
+  const base=l.tipo==='brillo'?'rough':'grass';
+  return `${base}_${l.name.toLowerCase().replace(/\s+/g,'_').replace(/[^\w\-]/g,'')}.png`;
+}
 
 // JSON
-function genGrassMask(layer,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,w,h);layer.strokes.forEach(st=>{const g=Math.round(st.opac*255);const col=`rgb(${g},${g},${g})`;if(st.type==='brush'){x.strokeStyle=col;x.lineWidth=st.size;x.lineCap='round';x.lineJoin='round';x.beginPath();st.pts.forEach((p,i)=>{i===0?x.moveTo(p.x,p.y):x.lineTo(p.x,p.y);});x.stroke();}else if(st.type==='poly'&&st.pts.length>2){x.fillStyle=col;x.beginPath();st.pts.forEach((p,i)=>{i===0?x.moveTo(p.x,p.y):x.lineTo(p.x,p.y);});x.closePath();x.fill();}});return c.toDataURL('image/png');}
-function showJSON(){const w=S.mapImg?S.mapImg.width:800,h=S.mapImg?S.mapImg.height:600;const grassLayers=G.layers.filter(l=>l.strokes.length).map((l,i)=>({name:l.name,index:i,maskFile:`grass_${l.name.toLowerCase().replace(/\s+/g,'_')}.png`}));const d={name:curLevelName()||'nivel_01',version:1,created:new Date().toISOString(),map:{width:w,height:h,realWidthCm:S.scaleCm||null,characterHeightCm:S.charCm||null},objects:S.objects.map(o=>{const e={id:o.type+'_'+o.id,type:o.type,label:OBJS[o.type].l,category:OBJS[o.type].cat||'core',rotation:o.rot||null,scale:o.scl!=null?o.scl:1,position:{world3D:o.p||null,normal:o.n||null,world:{x:Math.round(o.wx||0),y:Math.round(o.wy||0)},normalized:{x:+((o.wx||0)/w).toFixed(4),y:+((o.wy||0)/h).toFixed(4)}},note:o.note||''};if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:grassLayers};$('jsonOut').textContent=JSON.stringify(d,null,2);S._grassMasks=G.layers.filter(l=>l.strokes.length).map(l=>({name:l.name,data:genGrassMask(l,w,h)}));$('jsonOv').classList.remove('hide');}
+function showJSON(){const w=S.mapImg?S.mapImg.width:800,h=S.mapImg?S.mapImg.height:600;const grassLayers=capasConContenido().map((l,i)=>({name:l.name,tipo:l.tipo,index:i,maskFile:nombreArchivoCapa(l)}));const d={name:curLevelName()||'nivel_01',version:1,created:new Date().toISOString(),map:{width:w,height:h,realWidthCm:S.scaleCm||null,characterHeightCm:S.charCm||null},objects:S.objects.map(o=>{const e={id:o.type+'_'+o.id,type:o.type,label:OBJS[o.type].l,category:OBJS[o.type].cat||'core',rotation:o.rot||null,scale:o.scl!=null?o.scl:1,position:{world3D:o.p||null,normal:o.n||null,world:{x:Math.round(o.wx||0),y:Math.round(o.wy||0)},normalized:{x:+((o.wx||0)/w).toFixed(4),y:+((o.wy||0)/h).toFixed(4)}},note:o.note||''};if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:grassLayers};$('jsonOut').textContent=JSON.stringify(d,null,2);S._grassMasks=capasConContenido().map(l=>({name:nombreArchivoCapa(l),data:mascaraPNG(l)}));$('jsonOv').classList.remove('hide');}
 $('jsonBtn').addEventListener('click',showJSON);
 $('undoBtn').addEventListener('click',doUndo);
 $('saveBtn').addEventListener('click',doSave);
 $('jsonX').addEventListener('click',()=>$('jsonOv').classList.add('hide'));
-$('jsonDl').addEventListener('click',()=>{const n=curLevelName()||'nivel_01';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([$('jsonOut').textContent],{type:'application/json'}));a.download=n+'.json';a.click();if(S._grassMasks&&S._grassMasks.length){S._grassMasks.forEach(m=>{const b=document.createElement('a');b.href=m.data;b.download='grass_'+m.name.toLowerCase().replace(/\s+/g,'_')+'.png';b.click();});toast(`JSON + ${S._grassMasks.length} máscara(s)`);}else{toast('Descargado');}});
+$('jsonDl').addEventListener('click',()=>{const n=curLevelName()||'nivel_01';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([$('jsonOut').textContent],{type:'application/json'}));a.download=n+'.json';a.click();if(S._grassMasks&&S._grassMasks.length){S._grassMasks.forEach(m=>{const b=document.createElement('a');b.href=m.data;b.download=m.name;b.click();});toast(`JSON + ${S._grassMasks.length} máscara(s)`);}else{toast('Descargado');}});
 $('jsonCp').addEventListener('click',()=>navigator.clipboard.writeText($('jsonOut').textContent).then(()=>toast('Copiado')));
 $("jsonPush").addEventListener("click",()=>{$("jsonOv").classList.add("hide");pushLevelToUnity();});
 $('jsonPush').addEventListener('click',()=>{$('jsonOv').classList.add('hide');pushLevelToUnity();});
@@ -1269,9 +1438,16 @@ function gestos3D(el){
       E3.pinch=Math.hypot(a.x-b.x,a.y-b.y);
       E3.mid=centro(k);
       E3.pend=null;            // dos dedos cancelan la colocación
+      P.pintando=false;P.ultimoUV=null;
       return;
     }
     E3.movido=false;
+    if(esModoPintura()){
+      asegurarOverlay();
+      P.ultimoUV=null;
+      P.pintando=pinceladaEn(e.clientX,e.clientY,false);
+      return;
+    }
     // Con herramienta de objeto, la colocación se confirma al levantar el dedo
     if(OBJS[S.tool])E3.pend={x:e.clientX,y:e.clientY};
     else if(S.tool==='select'){
@@ -1310,6 +1486,8 @@ function gestos3D(el){
 
     if(Math.abs(dx)>2||Math.abs(dy)>2)E3.movido=true;
 
+    if(P.pintando){pinceladaEn(e.clientX,e.clientY,true);return;}
+
     // Arrastrar un objeto por la superficie
     if(E3.drag.id){
       const h=rayo3D(e.clientX,e.clientY);
@@ -1335,6 +1513,7 @@ function gestos3D(el){
   });
 
   function soltar(e){
+    if(P.pintando){P.pintando=false;P.ultimoUV=null;}
     // Toque limpio con herramienta de objeto: colocar
     if(E3.pend&&!E3.movido&&Object.keys(pts).length<=1){
       colocar3D(E3.pend.x,E3.pend.y);
@@ -1467,6 +1646,7 @@ function cargarMeshEn3D(forzar){
   if(!forzar&&E3.mesh&&E3.geoId===MV.mesh.geometry.uuid)return true;
   if(E3.mesh){E3.scene.remove(E3.mesh);}
   E3.geoId=MV.mesh.geometry.uuid;
+  quitarOverlay();P.overlay=null;
   E3.mesh=new THREE.Mesh(MV.mesh.geometry, MV.mesh.material);
   E3.mesh.name='terreno';
   E3.scene.add(E3.mesh);
@@ -1476,6 +1656,7 @@ function cargarMeshEn3D(forzar){
   const t=b.getSize(new THREE.Vector3());
   E3.target.copy(c);
   E3.dist=Math.max(t.x,t.y,t.z)*1.8||3;
+  if(esModoPintura())asegurarOverlay();
   return true;
 }
 
@@ -1534,7 +1715,7 @@ function mostrarHint3D(){
     h=document.createElement('div');h.className='hint3d';h.id='hint3d';
     $('stage').appendChild(h);
   }
-  h.textContent=OBJS[S.tool]?'Toca el modelo para colocar':'1 dedo gira · 2 dedos mueven y hacen zoom';
+  h.textContent=esModoPintura()?(S.tool==='grass_erase'?'Arrastra para borrar · 2 dedos mueven la vista':'Arrastra para pintar · 2 dedos mueven la vista'):(OBJS[S.tool]?'Toca el modelo para colocar':'1 dedo gira · 2 dedos mueven y hacen zoom');
   h.style.display='block';
   clearTimeout(hint3dT);
   hint3dT=setTimeout(()=>{h.style.display='none';},3200);
@@ -1959,6 +2140,62 @@ $('bibX').addEventListener('click',()=>$('bibOv').classList.add('hide'));
 $('bibBuscar').addEventListener('input',e=>{CAT.filtro=e.target.value;pintarBiblioteca();});
 
 
+
+// ─── MONTAR EN UNITY ────────────────────────────────────────────────────────
+// Manda el nivel y pide al editor que cree o actualice su escena. Unity no
+// acepta órdenes desde fuera, así que un vigía del editor recoge la petición.
+let escenaPoll=null;
+
+async function montarEnUnity(){
+  if(!S.ip){toast('Conecta al PC en Ajustes');return;}
+  const btn=$('unityBtn');
+  if(btn.classList.contains('trabajando'))return;
+  btn.classList.add('trabajando');
+  try{
+    toast('Enviando nivel...');
+    const ok=await pushLevelToUnity(true);
+    if(!ok){btn.classList.remove('trabajando');return;}
+
+    const nombre=curLevelName()||'nivel_01';
+    const r=await fetch(`${srvURL()}/build-scene`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({level:nombre}),signal:AbortSignal.timeout(15000)});
+    if(!r.ok){toast('No se pudo pedir la escena');btn.classList.remove('trabajando');return;}
+
+    toast('Unity está montando la escena...');
+    esperarEscena();
+  }catch(e){
+    toast('Sin conexión al PC');
+    $('unityBtn').classList.remove('trabajando');
+  }
+}
+
+function esperarEscena(){
+  clearInterval(escenaPoll);
+  let intentos=0;
+  escenaPoll=setInterval(async()=>{
+    intentos++;
+    if(intentos>40){   // ~2 min
+      clearInterval(escenaPoll);
+      $('unityBtn').classList.remove('trabajando');
+      toast('Unity no responde — ¿está abierto el proyecto?');
+      return;
+    }
+    try{
+      const r=await fetch(`${srvURL()}/scene-status`,{signal:AbortSignal.timeout(6000)});
+      if(!r.ok)return;
+      const d=await r.json();
+      if(d.estado==='hecho'){
+        clearInterval(escenaPoll);
+        $('unityBtn').classList.remove('trabajando');
+        toast(d.ok?('Unity: '+(d.msg||'listo')):('Unity: '+(d.msg||'falló')));
+      }
+    }catch(e){}
+  },3000);
+}
+
+$('unityBtn').addEventListener('click',montarEnUnity);
+
 // ─── CONSOLA UNITY ───────────────────────────────────────────────────────────
 let consoleOpen=false,consoleSince=0,consolePoll=null;
 function toggleConsole(){
@@ -1988,22 +2225,22 @@ $('consoleBtn').addEventListener('click',toggleConsole);
 $('consoleClear').addEventListener('click',async()=>{$('consoleMsgs').innerHTML='';consoleSince=0;if(S.ip)await fetch(`${srvURL()}/unity-log/clear`,{method:'POST'}).catch(()=>{});$('consoleStatus').textContent='Sin errores';$('consoleBtn').classList.remove('has-error','has-warn');});
 
 // ─── PUSH NIVEL → UNITY ─────────────────────────────────────────────────────
-async function pushLevelToUnity(){
+async function pushLevelToUnity(silencioso){
   if(!S.ip){toast('Conecta al PC en Ajustes primero');return;}
   const name=curLevelName()||'nivel_01';
   const w=S.mapImg?S.mapImg.width:800,h=S.mapImg?S.mapImg.height:600;
-  const levelJson=JSON.stringify({name,version:1,created:new Date().toISOString(),map:{width:w,height:h,realWidthCm:S.scaleCm||null,characterHeightCm:S.charCm||null},objects:S.objects.map(o=>{const e={id:o.type+'_'+o.id,type:o.type,label:OBJS[o.type].l,category:OBJS[o.type].cat||'core',rotation:o.rot||null,scale:o.scl!=null?o.scl:1,position:{world3D:o.p||null,normal:o.n||null,normalized:{x:+((o.wx||0)/w).toFixed(4),y:+((o.wy||0)/h).toFixed(4)}},note:o.note||''};if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:G.layers.filter(l=>l.strokes.length).map(l=>({name:l.name,maskFile:`grass_${l.name.toLowerCase().replace(/\s+/g,'_')}.png`}))});
+  const levelJson=JSON.stringify({name,version:1,created:new Date().toISOString(),map:{width:w,height:h,realWidthCm:S.scaleCm||null,characterHeightCm:S.charCm||null},objects:S.objects.map(o=>{const e={id:o.type+'_'+o.id,type:o.type,label:OBJS[o.type].l,category:OBJS[o.type].cat||'core',rotation:o.rot||null,scale:o.scl!=null?o.scl:1,position:{world3D:o.p||null,normal:o.n||null,normalized:{x:+((o.wx||0)/w).toFixed(4),y:+((o.wy||0)/h).toFixed(4)}},note:o.note||''};if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:capasConContenido().map(l=>({name:l.name,tipo:l.tipo,maskFile:nombreArchivoCapa(l)}))});
   const fd=new FormData();fd.append('name',name);fd.append('levelJson',levelJson);
-  for(const l of G.layers.filter(l=>l.strokes.length)){
-    const fname=`grass_${l.name.toLowerCase().replace(/\s+/g,'_')}.png`;
-    const blob=await (await fetch(genGrassMask(l,w,h))).blob();
+  for(const l of capasConContenido()){
+    const fname=nombreArchivoCapa(l);
+    const blob=await (await fetch(mascaraPNG(l))).blob();
     fd.append(fname,blob,fname);
   }
   try{
     const r=await fetch(`${srvURL()}/push-level`,{method:'POST',body:fd,signal:AbortSignal.timeout(30000)});
-    if(r.ok){const d=await r.json();toast(`Nivel → Unity (${d.files.length} archivos)`);}
-    else toast('Error al enviar');
-  }catch(e){toast('Sin conexión al PC');}
+    if(r.ok){const d=await r.json();if(!silencioso)toast(`Nivel → Unity (${d.files.length} archivos)`);return true;}
+    toast('Error al enviar');return false;
+  }catch(e){toast('Sin conexión al PC');return false;}
 }
 
 // CHATS
@@ -2027,7 +2264,7 @@ $('chatTitle').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefau
 
 // UNDO + SAVE
 function pushUndo(){
-  S.undo.push(JSON.stringify({o:S.objects,g:G.layers}));
+  S.undo.push(JSON.stringify({o:S.objects}));
   if(S.undo.length>50)S.undo.shift();
   S.redo.length=0;           // una acción nueva invalida lo rehecho
   S.dirty=true;updateSaveBtn();
@@ -2035,7 +2272,7 @@ function pushUndo(){
 }
 function doRedo(){
   if(!S.redo.length){toast('Nada que rehacer');return;}
-  S.undo.push(JSON.stringify({o:S.objects,g:G.layers}));
+  S.undo.push(JSON.stringify({o:S.objects}));
   const st=JSON.parse(S.redo.pop());
   aplicarEstado(st);
   toast('Rehecho');
@@ -2043,26 +2280,25 @@ function doRedo(){
 function aplicarEstado(st){
   (st.o||[]).forEach(o=>{if(!OBJS[o.type])OBJS[o.type]={ab:'?',l:o.type.replace(/^c_/,''),u:0,c:'#7a6a55',phys:{dyn:0,col:'mesh_convex'},custom:1};});
   S.objects=st.o||[];
-  if(st.g)G.layers=st.g;
-  S.sel=null;selPanel();renderGrassLayers();drawGrass();render();
+  S.sel=null;selPanel();render();
   if(E3.on)refrescar3D();
   S.dirty=true;updateSaveBtn();
   if(typeof edActualizarBotones==='function')edActualizarBotones();
 }
-function doUndo(){if(!S.undo.length){toast('Nada que deshacer');return;}S.redo.push(JSON.stringify({o:S.objects,g:G.layers}));const st=JSON.parse(S.undo.pop());(st.o||[]).forEach(o=>{if(!OBJS[o.type])OBJS[o.type]={ab:'?',l:o.type.replace(/^c_/,''),u:0,c:'#7a6a55',phys:{dyn:0,col:'mesh_convex'},custom:1};});S.objects=st.o||[];if(st.g)G.layers=st.g;S.sel=null;selPanel();renderGrassLayers();drawGrass();render();if(E3.on)refrescar3D();S.dirty=true;updateSaveBtn();}
+function doUndo(){if(!S.undo.length){toast('Nada que deshacer');return;}S.redo.push(JSON.stringify({o:S.objects}));const st=JSON.parse(S.undo.pop());(st.o||[]).forEach(o=>{if(!OBJS[o.type])OBJS[o.type]={ab:'?',l:o.type.replace(/^c_/,''),u:0,c:'#7a6a55',phys:{dyn:0,col:'mesh_convex'},custom:1};});S.objects=st.o||[];S.sel=null;selPanel();render();if(E3.on)refrescar3D();S.dirty=true;updateSaveBtn();}
 function updateSaveBtn(){const b=$('saveBtn');if(b)b.style.opacity=S.dirty?'1':'.4';}
 async function doSave(){if(!S.db||!S.levelId){toast('Conecta Firebase para guardar');return;}try{await S.db.collection('levels').doc(S.levelId).set({...snapshotLevel(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});S.dirty=false;updateSaveBtn();toast('Nivel guardado');}catch(e){toast('Error al guardar');}}
 
 // LEVELS
 let levels=[];
 function curLevelName(){return $('levelSelName').textContent;}
-function snapshotLevel(){return{name:curLevelName(),objects:S.objects.map(o=>{const e={type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:G.layers.map(l=>({name:l.name,color:l.color,vis:l.vis,strokes:l.strokes})),scaleCm:S.scaleCm||0,charCm:S.charCm||0,escalaObj:S.escalaObj||1,nextId:S.nextId,updatedAt:Date.now()};}
+function snapshotLevel(){return{name:curLevelName(),objects:S.objects.map(o=>{const e={type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:P.capas.map(l=>({name:l.name,tipo:l.tipo,color:l.color,vis:l.vis,vacia:l.vacia,img:l.vacia?null:l.cv.toDataURL('image/png')})),scaleCm:S.scaleCm||0,charCm:S.charCm||0,escalaObj:S.escalaObj||1,nextId:S.nextId,updatedAt:Date.now()};}
 function loadLevels(){if(!S.db)return;if(S.lvlUnsub)S.lvlUnsub();S.lvlUnsub=S.db.collection('levels').orderBy('updatedAt','desc').onSnapshot(s=>{levels=s.docs.map(d=>({id:d.id,...d.data()}));renderLevels();if(!S.levelId&&levels.length)openLevel(levels[0].id);else if(!S.levelId)newLevel();});}
 function renderLevels(){const el=$('lvlList');if(!levels.length){el.innerHTML='<div class="empty">Sin niveles — crea uno nuevo</div>';return;}el.innerHTML=levels.map(l=>{const n=(l.objects||[]).length;return `<div class="li ${l.id===S.levelId?'on':''}" data-id="${l.id}"><span class="li-ic"><svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg></span><div class="li-info"><div class="li-t">${esc(l.name||'Sin nombre')}</div><div class="li-s">${n} objeto${n!==1?'s':''}</div></div><button class="li-x" data-del="${l.id}">×</button></div>`;}).join('');el.querySelectorAll('.li').forEach(i=>i.addEventListener('click',e=>{if(e.target.dataset.del)return;openLevel(i.dataset.id);$('lvlOv').classList.add('hide');}));el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();delLevel(b.dataset.del);}));}
 async function newLevel(){const name='nivel_'+String(levels.length+1).padStart(2,'0');if(S.db){const r=await S.db.collection('levels').add({name,objects:[],nextId:1,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});openLevel(r.id);}else{const id='llocal_'+Date.now();levels.unshift({id,name,objects:[],nextId:1});openLevel(id);}$('lvlOv').classList.add('hide');}
 async function delLevel(id){if(!confirm('¿Eliminar este nivel?'))return;if(S.db){try{await S.db.collection('levels').doc(id).delete();}catch(e){}}else{levels=levels.filter(l=>l.id!==id);renderLevels();}if(S.levelId===id){S.levelId=null;if(levels.length)openLevel(levels[0].id);else newLevel();}}
 function openLevel(id){const l=levels.find(x=>x.id===id);if(!l)return;S.levelId=id;(l.objects||[]).forEach(o=>{if(!OBJS[o.type])OBJS[o.type]={ab:'?',l:o.type.replace(/^c_/,''),u:0,c:'#7a6a55',phys:{dyn:0,col:'mesh_convex'},custom:1};});
-  S.objects=(l.objects||[]).map((o,i)=>{const e={id:i+1,type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;});if(l.grass&&l.grass.length){G.layers=l.grass.map(g=>({name:g.name,color:g.color,vis:g.vis!==false,strokes:g.strokes||[]}));G.active=0;renderGrassLayers();drawGrass();}S.nextId=(l.nextId)||S.objects.length+1;S.scaleCm=l.scaleCm||0;S.charCm=l.charCm||0;S.escalaObj=l.escalaObj||1;S.sel=null;S.undo=[];S.dirty=false;updateSaveBtn();$('levelSelName').textContent=l.name||'nivel';S.mapImg=null;$('drop').classList.remove('hide');selPanel();fit();render();if(E3.on)refrescar3D();renderLevels();}
+  S.objects=(l.objects||[]).map((o,i)=>{const e={id:i+1,type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;});cargarCapas(l.grass);S.nextId=(l.nextId)||S.objects.length+1;S.scaleCm=l.scaleCm||0;S.charCm=l.charCm||0;S.escalaObj=l.escalaObj||1;S.sel=null;S.undo=[];S.dirty=false;updateSaveBtn();$('levelSelName').textContent=l.name||'nivel';S.mapImg=null;$('drop').classList.remove('hide');selPanel();fit();render();if(E3.on)refrescar3D();renderLevels();}
 $('levelSel').addEventListener('click',()=>{renderLevels();$('lvlOv').classList.remove('hide');});
 $('lvlX').addEventListener('click',()=>$('lvlOv').classList.add('hide'));
 $('lvlNew').addEventListener('click',newLevel);
@@ -2563,7 +2799,7 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
 
 // INIT
 $('view3dBtn').disabled=true;
-initGrass();resize();fit();render();loadConns();
+initPintura();resize();fit();render();loadConns();
 if(S.ip)connect();
 if(!savedFB){S.chatId='local_0';welcome();}
 </script>
