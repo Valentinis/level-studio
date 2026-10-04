@@ -853,7 +853,7 @@ const CAT_FIS={mueble:{dyn:0,col:'mesh_convex'},deco:{dyn:0,col:'none'},
                portal:{dyn:0,col:'box'}};
 // Sello de compilación: sirve para comprobar de un vistazo si GitHub Pages
 // ya sirve la versión nueva o aún tiene la anterior en caché.
-const APP_VER='2026.10.04-1035';
+const APP_VER='2026.10.04-1055';
 const $=id=>document.getElementById(id);
 // Devuelve la base del servidor: acepta IP simple (192.168.1.37) o URL completa (https://x.trycloudflare.com)
 function srvURL(){
@@ -3532,18 +3532,31 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
       if(full)texAjustada=await new Promise(res=>full.toBlob(res,'image/jpeg',0.95));
       btn.textContent='Enviando...';
     }
-    let sustituida=false;
+    // RealityScan manda varias imágenes (difusa, normal...). Solo hay que
+    // sustituir la de COLOR: el normal map no se toca o se rompe el relieve.
+    const esImagen=n=>/\.(jpe?g|png)$/i.test(n);
+    const esNoColor=n=>/(normal|_nrm|bump|rough|metal|occl|_ao|displac|height)/i.test(n);
+    const esColor=n=>esImagen(n)&&!esNoColor(n)&&
+        (/(diffuse|albedo|basecolor|base_color|_col|color)/i.test(n)||true);
+
+    // Primero la que se llame explícitamente difusa; si no, la primera de color
+    const imgs=MV.archivos.map((f,i)=>({f,i})).filter(o=>esImagen(o.f.name));
+    let idxColor=imgs.findIndex(o=>/(diffuse|albedo|basecolor|base_color)/i.test(o.f.name));
+    if(idxColor<0)idxColor=imgs.findIndex(o=>!esNoColor(o.f.name));
+    const iSustituir=idxColor>=0?imgs[idxColor].i:-1;
+
     for(let i=0;i<MV.archivos.length;i++){
       const f=MV.archivos[i];
-      const esImagen=/\.(jpe?g|png)$/i.test(f.name);
-      if(texAjustada&&esImagen&&!sustituida){
+      if(texAjustada&&i===iSustituir){
+        // Mismo nombre para que el .mtl siga apuntando bien
         fd.append('f'+i,texAjustada,f.name.replace(/\.png$/i,'.jpg'));
-        sustituida=true;
       }else{
         fd.append('f'+i,f,f.name);
       }
     }
-    if(texAjustada&&!sustituida)fd.append('tex',texAjustada,nombre+'.jpg');
+    if(texAjustada&&iSustituir<0)fd.append('tex',texAjustada,nombre+'.jpg');
+    if(texAjustada&&iSustituir>=0)
+      console.log('Textura ajustada sustituye a',MV.archivos[iSustituir].name);
     const r=await fetch(`${srvURL()}/push-mesh`,{method:'POST',body:fd,signal:AbortSignal.timeout(180000)});
     if(r.ok){
       const d=await r.json();
