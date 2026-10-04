@@ -50,6 +50,7 @@ header{
   flex-shrink:0;
 }
 .logo-wrap{display:flex;align-items:center;gap:9px;min-width:0;}
+.ver{font-style:normal;font-size:7px;color:var(--text-dim);font-family:'JetBrains Mono';display:block;line-height:1;margin-top:-2px;letter-spacing:0;}
 .logo{font-family:'Space Grotesk';font-weight:700;font-size:16px;color:var(--accent);letter-spacing:-.3px;white-space:nowrap;}
 .logo span{color:var(--cream);}
 .level-sel{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px 9px;color:var(--cream);font-size:12px;font-family:'JetBrains Mono';cursor:pointer;max-width:140px;}
@@ -437,7 +438,7 @@ header{
 
 <header>
   <div class="logo-wrap">
-    <span class="logo">LEVEL<span>×</span></span>
+    <span class="logo">LEVEL<span>×</span><em class="ver" id="appVer"></em></span>
     <button class="level-sel" id="levelSel"><span id="levelSelName">nivel_01</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
   </div>
   <div style="display:flex;align-items:center;gap:6px;">
@@ -850,6 +851,9 @@ const PALETA_COLORES=['#e08c4a','#9aab6a','#6a9eb8','#c478c4','#c4b068','#d4593a
 const CAT_FIS={mueble:{dyn:0,col:'mesh_convex'},deco:{dyn:0,col:'none'},
                gameplay:{dyn:1,col:'mesh_convex'},npc:{dyn:1,col:'capsule'},
                portal:{dyn:0,col:'box'}};
+// Sello de compilación: sirve para comprobar de un vistazo si GitHub Pages
+// ya sirve la versión nueva o aún tiene la anterior en caché.
+const APP_VER='2026.10.04-1035';
 const $=id=>document.getElementById(id);
 // Devuelve la base del servidor: acepta IP simple (192.168.1.37) o URL completa (https://x.trycloudflare.com)
 function srvURL(){
@@ -1737,7 +1741,8 @@ async function alinearConAnterior(){
 // Los escaneos suelen venir claros, y con la exposición de HDRP encima acaban
 // quemados. Se corrige aquí y la textura sale ya ajustada hacia Unity.
 const CJ={exp:0,con:0,sat:0,tem:0,alt:0,baj:0,
-          original:null,canvas:null,tex:null,pend:null};
+          original:null,originalSrc:null,texOriginal:null,
+          canvas:null,tex:null,pend:null,escalaPrevia:1};
 
 function cjValores(){return {exp:CJ.exp,con:CJ.con,sat:CJ.sat,tem:CJ.tem,alt:CJ.alt,baj:CJ.baj};}
 function cjNeutro(){return !CJ.exp&&!CJ.con&&!CJ.sat&&!CJ.tem&&!CJ.alt&&!CJ.baj;}
@@ -1750,9 +1755,17 @@ const CJ_FRANJA=512;         // altura del trozo al procesar a resolución real
 
 function cjCapturarOriginal(){
   const mat=MV.mesh&&MV.mesh.material;
-  const img=mat&&mat.map&&mat.map.image;
+  if(!mat)return false;
+
+  // La PRIMERA vez se guarda la textura original. Después mat.map apunta ya a
+  // la versión corregida, así que leer de ahí acumularía ajuste sobre ajuste.
+  if(!CJ.texOriginal){
+    if(!mat.map||!mat.map.image||!mat.map.image.width)return false;
+    CJ.texOriginal=mat.map;
+  }
+  const img=CJ.texOriginal.image;
   if(!img||!img.width)return false;
-  if(CJ.originalSrc===img&&CJ.original)return true;
+  if(CJ.original&&CJ.originalSrc===img)return true;
 
   const k=Math.min(1,CJ_PREVIA/Math.max(img.width,img.height));
   const w=Math.max(1,Math.round(img.width*k));
@@ -1760,15 +1773,38 @@ function cjCapturarOriginal(){
   const cv=document.createElement('canvas');
   cv.width=w;cv.height=h;
   try{
-    cv.getContext('2d').drawImage(img,0,0,w,h);
+    const x=cv.getContext('2d');
+    x.drawImage(img,0,0,w,h);
+    // Si el dibujado falló, el canvas queda en negro: se detecta y se avisa
+    const m=x.getImageData(Math.floor(w/2),Math.floor(h/2),1,1).data;
+    if(m[3]===0)throw new Error('textura vacía');
   }catch(e){
     console.warn('No se pudo leer la textura:',e);
+    toast('No se pudo leer la textura del modelo');
     return false;
   }
   CJ.original=cv;
   CJ.originalSrc=img;
   CJ.escalaPrevia=k;
   return true;
+}
+
+/// Copia a la textura nueva los ajustes de la original: sin esto la malla se
+/// ve negra o con los colores mal, porque three no los hereda solo.
+function cjClonarAjustes(tex){
+  const o=CJ.texOriginal;
+  if(!o)return;
+  tex.flipY=o.flipY;
+  tex.wrapS=o.wrapS; tex.wrapT=o.wrapT;
+  tex.repeat.copy(o.repeat); tex.offset.copy(o.offset);
+  tex.center.copy(o.center); tex.rotation=o.rotation;
+  tex.magFilter=o.magFilter; tex.minFilter=o.minFilter;
+  tex.anisotropy=o.anisotropy;
+  tex.generateMipmaps=o.generateMipmaps;
+  // El espacio de color es lo que más se nota: cambia según versión de three
+  if('colorSpace' in o)tex.colorSpace=o.colorSpace;
+  else if('encoding' in o)tex.encoding=o.encoding;
+  tex.needsUpdate=true;
 }
 
 /// Aplica la corrección a un ImageData ya obtenido. Separado para poder
@@ -1824,10 +1860,10 @@ function cjProcesar(cvOrigen){
 /// Procesa la textura a su resolución real, por franjas para no agotar la
 /// memoria. Solo se usa al exportar, no mientras mueves los deslizadores.
 async function cjProcesarCompleta(){
-  const mat=MV.mesh&&MV.mesh.material;
-  const img=mat&&mat.map&&mat.map.image;
-  if(!img||!img.width)return null;
   if(cjNeutro())return null;
+  if(!cjCapturarOriginal())return null;
+  const img=CJ.texOriginal&&CJ.texOriginal.image;
+  if(!img||!img.width)return null;
 
   // iOS limita el área total de un canvas; si la textura es enorme, se reduce
   const MAX_AREA=16000000;
@@ -1865,13 +1901,25 @@ function cjAplicar(inmediato){
   const hacer=()=>{
     if(!cjCapturarOriginal())return;
     const mat=MV.mesh.material;
-    if(CJ.tex)CJ.tex.dispose();
+
+    // Sin ajuste se devuelve la textura original, no una copia procesada
+    if(cjNeutro()){
+      if(CJ.tex){CJ.tex.dispose();CJ.tex=null;}
+      CJ.canvas=null;
+      mat.map=CJ.texOriginal;
+      mat.needsUpdate=true;
+      if(E3.on&&E3.mesh)E3.mesh.material=mat;
+      return;
+    }
+
+    const anterior=CJ.tex;
     CJ.canvas=cjProcesar(CJ.original);
     CJ.tex=new THREE.CanvasTexture(CJ.canvas);
-    CJ.tex.flipY=mat.map?mat.map.flipY:false;
-    CJ.tex.wrapS=CJ.tex.wrapT=THREE.ClampToEdgeWrapping;
+    cjClonarAjustes(CJ.tex);
     mat.map=CJ.tex;
     mat.needsUpdate=true;
+    // Liberar la anterior solo tras poner la nueva, nunca antes
+    if(anterior)anterior.dispose();
     if(E3.on&&E3.mesh)E3.mesh.material=mat;
     S.dirty=true;updateSaveBtn();
   };
@@ -3143,7 +3191,7 @@ function loadMeshGeometry(geo,mat){
   initMeshViewer();
   if(MV.mesh)guardarVersionAnterior();
   if(CJ.tex){CJ.tex.dispose();CJ.tex=null;}
-  CJ.original=null;CJ.originalSrc=null;CJ.canvas=null;
+  CJ.original=null;CJ.originalSrc=null;CJ.canvas=null;CJ.texOriginal=null;
   if(MV.mesh){MV.scene.remove(MV.mesh);if(MV.wire){MV.wire=null;}MV.wireOn=false;$('wfBtn').classList.remove('on');}
   MV.origGeo=geo.clone();
   if(!geo.attributes.normal)geo.computeVertexNormals();
@@ -3506,6 +3554,16 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
   }catch(e){btn.textContent=txt;btn.disabled=false;toast('Sin conexión al PC');}
 });
 
+
+// Versión visible: de un vistazo se sabe si GitHub Pages ya sirve la nueva
+$('appVer').textContent=APP_VER;
+$('appVer').addEventListener('click',()=>{
+  if(confirm(`Versión ${APP_VER}\n\n¿Recargar saltándose la caché?`)){
+    const u=new URL(location.href);
+    u.searchParams.set('v',Date.now());
+    location.replace(u.toString());
+  }
+});
 
 // INIT
 $('view3dBtn').disabled=true;
