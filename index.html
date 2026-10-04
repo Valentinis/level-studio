@@ -715,6 +715,7 @@ header{
         <div class="cj-row"><span>Temperatura</span><input type="range" id="cjTem" min="-100" max="100" value="0"><b id="cjTemV">0</b></div>
         <div class="cj-row"><span>Luces</span><input type="range" id="cjAlt" min="-100" max="100" value="0"><b id="cjAltV">0</b></div>
         <div class="cj-row"><span>Sombras</span><input type="range" id="cjBaj" min="-100" max="100" value="0"><b id="cjBajV">0</b></div>
+        <div class="cj-row"><span>Nitidez</span><input type="range" id="cjNit" min="0" max="100" value="0"><b id="cjNitV">0</b></div>
         <div class="mesh-btns" style="margin-top:8px;">
           <button class="mbtn" id="cjAuto">Auto</button>
           <button class="mbtn" id="cjReset">Restablecer</button>
@@ -853,7 +854,7 @@ const CAT_FIS={mueble:{dyn:0,col:'mesh_convex'},deco:{dyn:0,col:'none'},
                portal:{dyn:0,col:'box'}};
 // Sello de compilación: sirve para comprobar de un vistazo si GitHub Pages
 // ya sirve la versión nueva o aún tiene la anterior en caché.
-const APP_VER='2026.10.04-1055';
+const APP_VER='2026.10.04-1130';
 const $=id=>document.getElementById(id);
 // Devuelve la base del servidor: acepta IP simple (192.168.1.37) o URL completa (https://x.trycloudflare.com)
 function srvURL(){
@@ -1007,7 +1008,7 @@ const P={capas:[],activa:0,brush:26,inten:1,soft:.55,
          pintando:false,ultimoUV:null,comp:null,compCtx:null,compTex:null,overlay:null};
 const COLORES_CAPA=['#7aaa5a','#c478c4','#d9b34a','#6a9eb8','#d4593a','#8a9eff'];
 const TIPOS_CAPA={cesped:{nom:'Césped',int:'Altura'},brillo:{nom:'Brillo',int:'Brillo'},
-                  viento:{nom:'Viento',int:'Fuerza'}};
+                  viento:{nom:'Viento',int:'Fuerza'},borde:{nom:'Borde',int:'Desvanecido'}};
 
 function nuevaCapa(nombre,tipo,color){
   const cv=document.createElement('canvas');
@@ -1288,7 +1289,7 @@ function editarCapa(i){
   const n=prompt('Nombre de la capa:',l.name);
   if(n===null)return;
   if(n.trim())l.name=n.trim().slice(0,18);
-  const t=prompt('Tipo — escribe "cesped", "brillo" o "viento":',l.tipo);
+  const t=prompt('Tipo — escribe "cesped", "brillo", "viento" o "borde":',l.tipo);
   if(t&&TIPOS_CAPA[t.trim().toLowerCase()])l.tipo=t.trim().toLowerCase();
   renderGrassLayers();actualizarEtiquetaInt();
   S.dirty=true;updateSaveBtn();
@@ -1321,7 +1322,7 @@ function mascaraPNG(capa){
 
 function capasConContenido(){return P.capas.filter(l=>!l.vacia);}
 function nombreArchivoCapa(l){
-  const base=l.tipo==='brillo'?'rough':l.tipo==='viento'?'wind':'grass';
+  const base=l.tipo==='brillo'?'rough':l.tipo==='viento'?'wind':l.tipo==='borde'?'fade':'grass';
   return `${base}_${l.name.toLowerCase().replace(/\s+/g,'_').replace(/[^\w\-]/g,'')}.png`;
 }
 
@@ -1740,12 +1741,12 @@ async function alinearConAnterior(){
 // ─── AJUSTE DE COLOR DE LA TEXTURA ──────────────────────────────────────────
 // Los escaneos suelen venir claros, y con la exposición de HDRP encima acaban
 // quemados. Se corrige aquí y la textura sale ya ajustada hacia Unity.
-const CJ={exp:0,con:0,sat:0,tem:0,alt:0,baj:0,
+const CJ={exp:0,con:0,sat:0,tem:0,alt:0,baj:0,nit:0,
           original:null,originalSrc:null,texOriginal:null,
           canvas:null,tex:null,pend:null,escalaPrevia:1};
 
-function cjValores(){return {exp:CJ.exp,con:CJ.con,sat:CJ.sat,tem:CJ.tem,alt:CJ.alt,baj:CJ.baj};}
-function cjNeutro(){return !CJ.exp&&!CJ.con&&!CJ.sat&&!CJ.tem&&!CJ.alt&&!CJ.baj;}
+function cjValores(){return {exp:CJ.exp,con:CJ.con,sat:CJ.sat,tem:CJ.tem,alt:CJ.alt,baj:CJ.baj,nit:CJ.nit};}
+function cjNeutro(){return !CJ.exp&&!CJ.con&&!CJ.sat&&!CJ.tem&&!CJ.alt&&!CJ.baj&&!CJ.nit;}
 
 /// Guarda una copia REDUCIDA de la textura para la vista previa.
 /// Procesar una textura de 4K u 8K entera revienta la memoria del móvil, e iOS
@@ -1839,6 +1840,53 @@ function cjCorregirDatos(p){
   }
 }
 
+
+/// Realce de nitidez por máscara de desenfoque (unsharp mask).
+/// Se desenfoca una copia, se resta de la original y la diferencia —que son
+/// los bordes— se suma de vuelta. No inventa detalle: realza el que ya hay.
+function cjNitidez(datos,w,h,cantidad){
+  if(cantidad<=0)return;
+  const src=datos;
+  const n=w*h*4;
+  const borr=new Uint8ClampedArray(n);
+
+  // Desenfoque de caja 3x3 separado en dos pasadas: mucho más rápido que
+  // recorrer el vecindario entero por píxel
+  const tmp=new Uint8ClampedArray(n);
+  for(let y=0;y<h;y++){
+    const f=y*w*4;
+    for(let x=0;x<w;x++){
+      const i=f+x*4;
+      const iz=f+(x>0?x-1:0)*4, de=f+(x<w-1?x+1:w-1)*4;
+      tmp[i]  =(src[iz]  +src[i]  +src[de]  )/3;
+      tmp[i+1]=(src[iz+1]+src[i+1]+src[de+1])/3;
+      tmp[i+2]=(src[iz+2]+src[i+2]+src[de+2])/3;
+    }
+  }
+  for(let y=0;y<h;y++){
+    const ar=(y>0?y-1:0)*w*4, ab=(y<h-1?y+1:h-1)*w*4, f=y*w*4;
+    for(let x=0;x<w;x++){
+      const o=x*4, i=f+o;
+      borr[i]  =(tmp[ar+o]  +tmp[i]  +tmp[ab+o]  )/3;
+      borr[i+1]=(tmp[ar+o+1]+tmp[i+1]+tmp[ab+o+1])/3;
+      borr[i+2]=(tmp[ar+o+2]+tmp[i+2]+tmp[ab+o+2])/3;
+    }
+  }
+
+  // Umbral pequeño: evita amplificar el ruido fino del escaneo
+  const k=cantidad/100*1.6;
+  const umbral=3;
+  for(let i=0;i<n;i+=4){
+    for(let ch=0;ch<3;ch++){
+      const d=src[i+ch]-borr[i+ch];
+      if(d>umbral||d<-umbral){
+        const v=src[i+ch]+d*k;
+        src[i+ch]=v<0?0:v>255?255:v;
+      }
+    }
+  }
+}
+
 /// Versión para la vista previa: la imagen ya es pequeña, cabe de una vez
 function cjProcesar(cvOrigen){
   const w=cvOrigen.width,h=cvOrigen.height;
@@ -1850,6 +1898,9 @@ function cjProcesar(cvOrigen){
   try{
     const d=x.getImageData(0,0,w,h);
     cjCorregirDatos(d.data);
+    // En la previa la nitidez se escala: la imagen está reducida, así que el
+    // mismo valor se vería más fuerte de lo que saldrá en la textura final
+    cjNitidez(d.data,w,h,CJ.nit*(CJ.escalaPrevia||1));
     x.putImageData(d,0,0);
   }catch(e){
     console.warn('Ajuste de color no aplicado:',e);
@@ -1882,9 +1933,15 @@ async function cjProcesarCompleta(){
   for(let y=0;y<h;y+=CJ_FRANJA){
     const alto=Math.min(CJ_FRANJA,h-y);
     try{
-      const d=x.getImageData(0,y,w,alto);
+      // Se lee una fila de más arriba y abajo para que la nitidez no deje
+      // una costura visible en la junta entre franjas
+      const margen=CJ.nit>0?2:0;
+      const y0=Math.max(0,y-margen);
+      const alto2=Math.min(h-y0,alto+margen*2);
+      const d=x.getImageData(0,y0,w,alto2);
       cjCorregirDatos(d.data);
-      x.putImageData(d,0,y);
+      cjNitidez(d.data,w,alto2,CJ.nit);
+      x.putImageData(d,0,y0,0,y-y0,w,alto);
     }catch(e){
       console.warn('Franja no procesada:',e);
       break;
@@ -1931,12 +1988,13 @@ function cjAplicar(inmediato){
 function cjCargar(v){
   CJ.exp=v&&v.exp||0; CJ.con=v&&v.con||0; CJ.sat=v&&v.sat||0;
   CJ.tem=v&&v.tem||0; CJ.alt=v&&v.alt||0; CJ.baj=v&&v.baj||0;
+  CJ.nit=v&&v.nit||0;
   cjRefrescarUI();
   if(MV.mesh&&!cjNeutro())cjAplicar(true);
 }
 
 function cjRefrescarUI(){
-  const m={exp:'cjExp',con:'cjCon',sat:'cjSat',tem:'cjTem',alt:'cjAlt',baj:'cjBaj'};
+  const m={exp:'cjExp',con:'cjCon',sat:'cjSat',tem:'cjTem',alt:'cjAlt',baj:'cjBaj',nit:'cjNit'};
   for(const k in m){
     const el=$(m[k]);if(!el)continue;
     el.value=CJ[k];
@@ -1944,7 +2002,7 @@ function cjRefrescarUI(){
   }
 }
 
-[['cjExp','exp'],['cjCon','con'],['cjSat','sat'],['cjTem','tem'],['cjAlt','alt'],['cjBaj','baj']]
+[['cjExp','exp'],['cjCon','con'],['cjSat','sat'],['cjTem','tem'],['cjAlt','alt'],['cjBaj','baj'],['cjNit','nit']]
  .forEach(([id,k])=>{
   const el=$(id);if(!el)return;
   el.addEventListener('input',e=>{
@@ -1955,7 +2013,7 @@ function cjRefrescarUI(){
 });
 
 $('cjReset')&&$('cjReset').addEventListener('click',()=>{
-  CJ.exp=CJ.con=CJ.sat=CJ.tem=CJ.alt=CJ.baj=0;
+  CJ.exp=CJ.con=CJ.sat=CJ.tem=CJ.alt=CJ.baj=CJ.nit=0;
   cjRefrescarUI();cjAplicar(true);
   toast('Ajustes restablecidos');
 });
