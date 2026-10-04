@@ -1742,32 +1742,38 @@ const CJ={exp:0,con:0,sat:0,tem:0,alt:0,baj:0,
 function cjValores(){return {exp:CJ.exp,con:CJ.con,sat:CJ.sat,tem:CJ.tem,alt:CJ.alt,baj:CJ.baj};}
 function cjNeutro(){return !CJ.exp&&!CJ.con&&!CJ.sat&&!CJ.tem&&!CJ.alt&&!CJ.baj;}
 
-/// Guarda la imagen original de la textura para poder reajustar sin degradar
+/// Guarda una copia REDUCIDA de la textura para la vista previa.
+/// Procesar una textura de 4K u 8K entera revienta la memoria del móvil, e iOS
+/// además limita el área máxima de un canvas.
+const CJ_PREVIA=1024;        // lado máximo de la vista previa
+const CJ_FRANJA=512;         // altura del trozo al procesar a resolución real
+
 function cjCapturarOriginal(){
   const mat=MV.mesh&&MV.mesh.material;
   const img=mat&&mat.map&&mat.map.image;
   if(!img||!img.width)return false;
-  if(CJ.original&&CJ.original.width===img.width&&CJ.originalSrc===img)return true;
+  if(CJ.originalSrc===img&&CJ.original)return true;
+
+  const k=Math.min(1,CJ_PREVIA/Math.max(img.width,img.height));
+  const w=Math.max(1,Math.round(img.width*k));
+  const h=Math.max(1,Math.round(img.height*k));
   const cv=document.createElement('canvas');
-  cv.width=img.width;cv.height=img.height;
-  cv.getContext('2d').drawImage(img,0,0);
+  cv.width=w;cv.height=h;
+  try{
+    cv.getContext('2d').drawImage(img,0,0,w,h);
+  }catch(e){
+    console.warn('No se pudo leer la textura:',e);
+    return false;
+  }
   CJ.original=cv;
   CJ.originalSrc=img;
+  CJ.escalaPrevia=k;
   return true;
 }
 
-/// Aplica la corrección píxel a píxel sobre el canvas de trabajo
-function cjProcesar(cvOrigen){
-  const w=cvOrigen.width,h=cvOrigen.height;
-  const out=document.createElement('canvas');
-  out.width=w;out.height=h;
-  const x=out.getContext('2d');
-  x.drawImage(cvOrigen,0,0);
-  if(cjNeutro())return out;
-
-  const d=x.getImageData(0,0,w,h);
-  const p=d.data;
-
+/// Aplica la corrección a un ImageData ya obtenido. Separado para poder
+/// reutilizarlo tanto en la vista previa como al procesar por franjas.
+function cjCorregirDatos(p){
   const exp=Math.pow(2,CJ.exp/100*1.5);        // paradas de exposición
   const con=1+CJ.con/100*0.8;
   const sat=1+CJ.sat/100;
@@ -1778,29 +1784,14 @@ function cjProcesar(cvOrigen){
   for(let i=0;i<p.length;i+=4){
     let r=p[i],g=p[i+1],b=p[i+2];
 
-    // Exposición
     r*=exp; g*=exp; b*=exp;
-
-    // Temperatura: más rojo y menos azul al calentar
     r+=tem; b-=tem;
-
-    // Contraste alrededor del gris medio
     r=(r-128)*con+128; g=(g-128)*con+128; b=(b-128)*con+128;
 
-    // Luces y sombras por separado, con peso según la luminancia
     const lum=(r*0.299+g*0.587+b*0.114)/255;
-    if(alt){
-      const w2=lum*lum;             // afecta sobre todo a lo claro
-      const k=alt*60*w2;
-      r+=k; g+=k; b+=k;
-    }
-    if(baj){
-      const w2=(1-lum)*(1-lum);     // afecta sobre todo a lo oscuro
-      const k=baj*60*w2;
-      r+=k; g+=k; b+=k;
-    }
+    if(alt){const w=lum*lum, k=alt*60*w; r+=k;g+=k;b+=k;}
+    if(baj){const w=(1-lum)*(1-lum), k=baj*60*w; r+=k;g+=k;b+=k;}
 
-    // Saturación respecto a la luminancia
     if(sat!==1){
       const l=r*0.299+g*0.587+b*0.114;
       r=l+(r-l)*sat; g=l+(g-l)*sat; b=l+(b-l)*sat;
@@ -1810,7 +1801,61 @@ function cjProcesar(cvOrigen){
     p[i+1]=g<0?0:g>255?255:g;
     p[i+2]=b<0?0:b>255?255:b;
   }
-  x.putImageData(d,0,0);
+}
+
+/// Versión para la vista previa: la imagen ya es pequeña, cabe de una vez
+function cjProcesar(cvOrigen){
+  const w=cvOrigen.width,h=cvOrigen.height;
+  const out=document.createElement('canvas');
+  out.width=w;out.height=h;
+  const x=out.getContext('2d');
+  x.drawImage(cvOrigen,0,0);
+  if(cjNeutro())return out;
+  try{
+    const d=x.getImageData(0,0,w,h);
+    cjCorregirDatos(d.data);
+    x.putImageData(d,0,0);
+  }catch(e){
+    console.warn('Ajuste de color no aplicado:',e);
+  }
+  return out;
+}
+
+/// Procesa la textura a su resolución real, por franjas para no agotar la
+/// memoria. Solo se usa al exportar, no mientras mueves los deslizadores.
+async function cjProcesarCompleta(){
+  const mat=MV.mesh&&MV.mesh.material;
+  const img=mat&&mat.map&&mat.map.image;
+  if(!img||!img.width)return null;
+  if(cjNeutro())return null;
+
+  // iOS limita el área total de un canvas; si la textura es enorme, se reduce
+  const MAX_AREA=16000000;
+  let w=img.width,h=img.height;
+  const area=w*h;
+  if(area>MAX_AREA){
+    const k=Math.sqrt(MAX_AREA/area);
+    w=Math.round(w*k); h=Math.round(h*k);
+  }
+
+  const out=document.createElement('canvas');
+  out.width=w;out.height=h;
+  const x=out.getContext('2d');
+  x.drawImage(img,0,0,w,h);
+
+  for(let y=0;y<h;y+=CJ_FRANJA){
+    const alto=Math.min(CJ_FRANJA,h-y);
+    try{
+      const d=x.getImageData(0,y,w,alto);
+      cjCorregirDatos(d.data);
+      x.putImageData(d,0,y);
+    }catch(e){
+      console.warn('Franja no procesada:',e);
+      break;
+    }
+    // Ceder el hilo entre franjas: así el móvil no se queda colgado
+    await new Promise(r=>setTimeout(r,0));
+  }
   return out;
 }
 
@@ -1820,8 +1865,8 @@ function cjAplicar(inmediato){
   const hacer=()=>{
     if(!cjCapturarOriginal())return;
     const mat=MV.mesh.material;
-    CJ.canvas=cjProcesar(CJ.original);
     if(CJ.tex)CJ.tex.dispose();
+    CJ.canvas=cjProcesar(CJ.original);
     CJ.tex=new THREE.CanvasTexture(CJ.canvas);
     CJ.tex.flipY=mat.map?mat.map.flipY:false;
     CJ.tex.wrapS=CJ.tex.wrapT=THREE.ClampToEdgeWrapping;
@@ -1870,11 +1915,12 @@ $('cjReset')&&$('cjReset').addEventListener('click',()=>{
 /// Mide la imagen y propone una corrección: baja lo quemado y abre las sombras
 $('cjAuto')&&$('cjAuto').addEventListener('click',()=>{
   if(!cjCapturarOriginal()){toast('El modelo no tiene textura');return;}
-  const cv=CJ.original;
+  const cv=CJ.original;          // ya es la versión reducida
   const x=cv.getContext('2d');
-  // Muestreo reducido: no hace falta leer todos los píxeles
-  const paso=Math.max(1,Math.floor(cv.width/256));
-  const d=x.getImageData(0,0,cv.width,cv.height).data;
+  const paso=Math.max(1,Math.floor(cv.width/192));
+  let d;
+  try{ d=x.getImageData(0,0,cv.width,cv.height).data; }
+  catch(e){ toast('No se pudo leer la textura'); return; }
   let suma=0,n=0,quemados=0;
   for(let y=0;y<cv.height;y+=paso)for(let xx=0;xx<cv.width;xx+=paso){
     const i=(y*cv.width+xx)*4;
@@ -3096,7 +3142,8 @@ function resizeMeshViewer(){if(!MV.renderer)return;const s=$('meshStage');MV.cam
 function loadMeshGeometry(geo,mat){
   initMeshViewer();
   if(MV.mesh)guardarVersionAnterior();
-  CJ.original=null;CJ.originalSrc=null;
+  if(CJ.tex){CJ.tex.dispose();CJ.tex=null;}
+  CJ.original=null;CJ.originalSrc=null;CJ.canvas=null;
   if(MV.mesh){MV.scene.remove(MV.mesh);if(MV.wire){MV.wire=null;}MV.wireOn=false;$('wfBtn').classList.remove('on');}
   MV.origGeo=geo.clone();
   if(!geo.attributes.normal)geo.computeVertexNormals();
@@ -3431,8 +3478,11 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
     // Si hay ajuste de color, se sustituye la imagen por la corregida: así
     // Unity recibe la textura con el rango bueno y no hay que tocar exposición
     let texAjustada=null;
-    if(!cjNeutro()&&CJ.canvas){
-      texAjustada=await new Promise(res=>CJ.canvas.toBlob(res,'image/jpeg',0.95));
+    if(!cjNeutro()){
+      btn.textContent='Ajustando...';
+      const full=await cjProcesarCompleta();
+      if(full)texAjustada=await new Promise(res=>full.toBlob(res,'image/jpeg',0.95));
+      btn.textContent='Enviando...';
     }
     let sustituida=false;
     for(let i=0;i<MV.archivos.length;i++){
