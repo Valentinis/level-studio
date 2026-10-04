@@ -322,6 +322,10 @@ header{
 .mesh-ctrls label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-mid);margin-bottom:8px;font-weight:500;}
 .mesh-ctrls label span{color:var(--cream);font-family:'JetBrains Mono';}
 .mesh-ctrls input[type=range]{width:100%;accent-color:var(--accent);height:6px;}
+.cj-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.cj-row span{font-size:10px;color:var(--text-mid);width:76px;flex-shrink:0;}
+.cj-row input[type=range]{flex:1;accent-color:var(--accent);height:4px;}
+.cj-row b{font-size:10px;color:var(--accent);font-family:'JetBrains Mono';width:34px;text-align:right;}
 .mesh-btns{display:flex;gap:8px;margin-bottom:12px;}
 .mbtn{flex:1;font-size:11px;font-weight:600;padding:9px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--cream);cursor:pointer;font-family:inherit;}
 .mbtn:active{transform:scale(.95);}
@@ -607,6 +611,8 @@ header{
       <div class="tip" id="tip">Carga un mapa o coloca objetos</div>
       <div class="statusbar" id="statusbar" style="position:absolute;bottom:0;left:0;right:0;z-index:15;">
         <div class="chips" id="chips"></div>
+        <button class="maptrig" id="reposarBtn">Reposar</button>
+        <button class="maptrig" id="climaBtn">Clima</button>
         <button class="maptrig" id="escObjBtn">Tamaño objs</button>
         <button class="maptrig" id="view3dBtn">Vista 3D</button>
         <button class="maptrig" id="scaleTrig">Escala</button>
@@ -660,6 +666,8 @@ header{
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="wf-toggle" id="glbFileBtn" title="Cargar mesh del dispositivo (ZIP, GLB, OBJ, USDZ)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg></button>
         <button class="wf-toggle" id="glbPcBtn" title="Recibir mesh del PC"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>
+        <button class="wf-toggle" id="alinearBtn" title="Alinear con la versión anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="7"/></svg></button>
+        <button class="wf-toggle" id="fantasmaBtn" title="Ver versión anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m0 6v4a2 2 0 0 0 2 2h4m6 0h4a2 2 0 0 0 2-2v-4m0-6V5a2 2 0 0 0-2-2h-4"/><circle cx="12" cy="12" r="3"/></svg></button>
         <button class="wf-toggle" id="recenterBtn" title="Recentrar vista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
         <button class="wf-toggle" id="wfBtn" title="Ver topología"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
       <button class="mesh-approve" id="meshApprove">Aprobar → Unity</button>
@@ -679,6 +687,7 @@ header{
         <div class="mtab on" data-mt="crop">Recortar</div>
         <div class="mtab" data-mt="transform">Mover</div>
         <div class="mtab" data-mt="decimate">Decimar</div>
+        <div class="mtab" data-mt="color">Color</div>
       </div>
       <div class="mesh-ctrls" id="mCrop">
         <label>Altura corte base <span id="cropVal">0%</span></label>
@@ -697,6 +706,19 @@ header{
         <label>Detalle <span id="decVal">100%</span></label>
         <input type="range" id="decSlider" min="10" max="100" value="100">
         <div class="mesh-info" id="meshInfo">— triángulos</div>
+      </div>
+      <div class="mesh-ctrls" id="mColor" style="display:none;">
+        <div class="cj-row"><span>Exposición</span><input type="range" id="cjExp" min="-100" max="100" value="0"><b id="cjExpV">0</b></div>
+        <div class="cj-row"><span>Contraste</span><input type="range" id="cjCon" min="-100" max="100" value="0"><b id="cjConV">0</b></div>
+        <div class="cj-row"><span>Saturación</span><input type="range" id="cjSat" min="-100" max="100" value="0"><b id="cjSatV">0</b></div>
+        <div class="cj-row"><span>Temperatura</span><input type="range" id="cjTem" min="-100" max="100" value="0"><b id="cjTemV">0</b></div>
+        <div class="cj-row"><span>Luces</span><input type="range" id="cjAlt" min="-100" max="100" value="0"><b id="cjAltV">0</b></div>
+        <div class="cj-row"><span>Sombras</span><input type="range" id="cjBaj" min="-100" max="100" value="0"><b id="cjBajV">0</b></div>
+        <div class="mesh-btns" style="margin-top:8px;">
+          <button class="mbtn" id="cjAuto">Auto</button>
+          <button class="mbtn" id="cjReset">Restablecer</button>
+        </div>
+        <div class="mesh-info" id="cjInfo">Se guarda con el nivel</div>
       </div>
     </div>
   </div>
@@ -744,6 +766,14 @@ header{
   <input class="fin" id="bibBuscar" placeholder="Buscar..." autocomplete="off">
   <div class="bib-cats" id="bibCats"></div>
   <div class="bib-grid" id="bibGrid"></div>
+</div></div>
+
+<div class="ov hide" id="climaOv"><div class="sheet md">
+  <div class="sheet-h"><span class="sheet-t">Clima del nivel</span><button class="sheet-x" id="climaX">×</button></div>
+  <div class="col">
+    <div class="hint">Presets de Enviro publicados desde Unity. Se aplican al cargar el nivel.</div>
+    <div class="list" id="climaList"></div>
+  </div>
 </div></div>
 
 <div class="ov hide" id="escObjOv"><div class="sheet sm">
@@ -809,7 +839,7 @@ header{
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-const S={tool:'select',objects:[],sel:null,mapImg:null,nextId:1,cam:{x:0,y:0,z:1},drag:{on:false},cW:0,cH:0,ip:localStorage.getItem('ip')||'',conn:false,files:[],db:null,chatId:null,chatMsgs:[],chatsUnsub:null,msgsUnsub:null,levelId:null,lvlUnsub:null,undo:[],redo:[],dirty:false,pending:null,escalaObj:1,scaleCm:0,charCm:0};
+const S={tool:'select',objects:[],sel:null,mapImg:null,nextId:1,cam:{x:0,y:0,z:1},drag:{on:false},cW:0,cH:0,ip:localStorage.getItem('ip')||'',conn:false,files:[],db:null,chatId:null,chatMsgs:[],chatsUnsub:null,msgsUnsub:null,levelId:null,lvlUnsub:null,undo:[],redo:[],dirty:false,pending:null,escalaObj:1,enviro:'',scaleCm:0,charCm:0};
 // Tipos que el juego necesita sí o sí. El resto sale del catálogo que
 // publica Unity, así la paleta refleja los prefabs que existen de verdad.
 const OBJS={
@@ -972,14 +1002,18 @@ const TAM_MASCARA=1024;
 const P={capas:[],activa:0,brush:26,inten:1,soft:.55,
          pintando:false,ultimoUV:null,comp:null,compCtx:null,compTex:null,overlay:null};
 const COLORES_CAPA=['#7aaa5a','#c478c4','#d9b34a','#6a9eb8','#d4593a','#8a9eff'];
-const TIPOS_CAPA={cesped:{nom:'Césped',int:'Altura'},brillo:{nom:'Brillo',int:'Brillo'}};
+const TIPOS_CAPA={cesped:{nom:'Césped',int:'Altura'},brillo:{nom:'Brillo',int:'Brillo'},
+                  viento:{nom:'Viento',int:'Fuerza'}};
 
 function nuevaCapa(nombre,tipo,color){
   const cv=document.createElement('canvas');
   cv.width=cv.height=TAM_MASCARA;
   const cx2=cv.getContext('2d');
   cx2.fillStyle='#000';cx2.fillRect(0,0,TAM_MASCARA,TAM_MASCARA);
-  return {name:nombre,tipo:tipo||'cesped',color:color||COLORES_CAPA[0],vis:true,cv,ctx:cx2,vacia:true};
+  // 'trazos' es la fuente de verdad: puntos en coordenadas del MUNDO, que
+  // sobreviven a un cambio de mesh. El canvas es solo el resultado dibujado.
+  return {name:nombre,tipo:tipo||'cesped',color:color||COLORES_CAPA[0],
+          vis:true,cv,ctx:cx2,vacia:true,trazos:[]};
 }
 
 function initPintura(){
@@ -1001,7 +1035,9 @@ function cargarCapas(guardadas){
   P.capas=guardadas.map(g=>{
     const capa=nuevaCapa(g.name||'Capa',g.tipo||'cesped',g.color||COLORES_CAPA[0]);
     capa.vis=g.vis!==false;
-    if(g.img){
+    capa.trazos=g.trazos||[];
+    // Compatibilidad con niveles guardados antes de los trazos
+    if(!capa.trazos.length&&g.img){
       capa.vacia=false;
       const im=new Image();
       im.onload=()=>{capa.ctx.drawImage(im,0,0,TAM_MASCARA,TAM_MASCARA);recomponer();};
@@ -1010,7 +1046,9 @@ function cargarCapas(guardadas){
     return capa;
   });
   P.activa=0;
-  renderGrassLayers();actualizarEtiquetaInt();recomponer();
+  renderGrassLayers();actualizarEtiquetaInt();
+  // Los trazos se proyectan sobre la malla en cuanto esté disponible
+  if(E3.mesh)reproyectarTrazos(); else recomponer();
 }
 
 function esModoPintura(){return S.tool==='grass_paint'||S.tool==='grass_erase';}
@@ -1101,19 +1139,117 @@ function pinceladaEn(cx,cy,continuar){
   const v=new THREE.Vector2(((cx-r.left)/r.width)*2-1, -((cy-r.top)/r.height)*2+1);
   E3.ray.setFromCamera(v,E3.cam);
   const hits=E3.ray.intersectObject(E3.mesh,false);
-  if(!hits.length||!hits[0].uv){
-    if(!hits.length)return false;
-    toast('El modelo no tiene coordenadas de textura');
-    return false;
-  }
-  const uv={x:hits[0].uv.x,y:1-hits[0].uv.y};   // el canvas crece hacia abajo
+  if(!hits.length)return false;
+  const h=hits[0];
+  if(!h.uv){toast('El modelo no tiene coordenadas de textura');return false;}
+
+  const uv={x:h.uv.x,y:1-h.uv.y};        // el canvas crece hacia abajo
   const borrar=S.tool==='grass_erase';
+  const capa=P.capas[P.activa];
+
+  if(borrar){
+    // Borrar quita los puntos cercanos del registro, para que no reaparezcan
+    // al regenerar la máscara sobre un mesh nuevo
+    borrarTrazosCerca(h.point,P.brush/TAM_MASCARA*2);
+  }else if(capa){
+    let n={x:0,y:1,z:0};
+    if(h.face){
+      const nn=h.face.normal.clone().transformDirection(h.object.matrixWorld);
+      n={x:+nn.x.toFixed(3),y:+nn.y.toFixed(3),z:+nn.z.toFixed(3)};
+    }
+    capa.trazos.push({
+      p:{x:+h.point.x.toFixed(4),y:+h.point.y.toFixed(4),z:+h.point.z.toFixed(4)},
+      n, r:P.brush, i:+P.inten.toFixed(2), s:+P.soft.toFixed(2)
+    });
+  }
+
   if(continuar&&P.ultimoUV)trazoUV(P.ultimoUV,uv,borrar);
   else pintarUV(uv.x,uv.y,borrar);
   P.ultimoUV=uv;
   recomponer();
   S.dirty=true;updateSaveBtn();
   return true;
+}
+
+/// Quita del registro los puntos que caen bajo el borrador
+function borrarTrazosCerca(punto,radio){
+  const r2=radio*radio*4;
+  for(const capa of P.capas){
+    const antes=capa.trazos.length;
+    capa.trazos=capa.trazos.filter(t=>{
+      const dx=t.p.x-punto.x, dy=t.p.y-punto.y, dz=t.p.z-punto.z;
+      return (dx*dx+dy*dy+dz*dz)>r2;
+    });
+    if(capa.trazos.length!==antes&&!capa.trazos.length)capa.vacia=true;
+  }
+}
+
+/// Vuelve a dibujar todas las máscaras proyectando los trazos guardados sobre
+/// la malla actual. Es lo que permite cambiar de mesh sin perder lo pintado.
+function reproyectarTrazos(){
+  if(!E3.mesh){toast('No hay modelo cargado');return 0;}
+  const geo=E3.mesh.geometry;
+  if(!geo.attributes.uv){toast('El modelo no tiene coordenadas de textura');return 0;}
+
+  let repintados=0, perdidos=0;
+  for(const capa of P.capas){
+    // Limpiar y repintar desde cero
+    capa.ctx.globalCompositeOperation='source-over';
+    capa.ctx.fillStyle='#000';
+    capa.ctx.fillRect(0,0,TAM_MASCARA,TAM_MASCARA);
+    capa.vacia=true;
+    if(!capa.trazos||!capa.trazos.length)continue;
+
+    const guardarActiva=P.activa;
+    P.activa=P.capas.indexOf(capa);
+
+    let ultimo=null;
+    for(const t of capa.trazos){
+      const uv=uvDesdePunto(t.p,t.n);
+      if(!uv){perdidos++;ultimo=null;continue;}
+      const gb=P.brush, gi=P.inten, gs=P.soft;
+      P.brush=t.r||P.brush; P.inten=t.i!=null?t.i:P.inten; P.soft=t.s!=null?t.s:P.soft;
+      // Unir puntos consecutivos que estén cerca, para reconstruir el trazo
+      if(ultimo&&Math.hypot(uv.x-ultimo.x,uv.y-ultimo.y)<0.08)trazoUV(ultimo,uv,false);
+      else pintarUV(uv.x,uv.y,false);
+      P.brush=gb;P.inten=gi;P.soft=gs;
+      ultimo=uv;
+      capa.vacia=false;
+      repintados++;
+    }
+    P.activa=guardarActiva;
+  }
+  recomponer();
+  S.dirty=true;updateSaveBtn();
+  if(perdidos)toast(`${repintados} puntos repintados · ${perdidos} sin superficie`);
+  else if(repintados)toast(`${repintados} puntos repintados sobre el modelo nuevo`);
+  return repintados;
+}
+
+/// Encuentra la coordenada UV de un punto del mundo sobre la malla actual.
+/// Lanza un rayo contra la superficie siguiendo la normal que tenía el trazo.
+function uvDesdePunto(p,n){
+  if(!E3.ray)E3.ray=new THREE.Raycaster();
+  const pos=new THREE.Vector3(p.x,p.y,p.z);
+  const nor=new THREE.Vector3(n?n.x:0,n?n.y:1,n?n.z:0);
+  if(nor.lengthSq()<0.01)nor.set(0,1,0);
+  nor.normalize();
+
+  // Desde un poco por encima, hacia la superficie
+  const dist=0.6;
+  E3.ray.set(pos.clone().addScaledVector(nor,dist), nor.clone().negate());
+  E3.ray.far=dist*2.5;
+  let hits=E3.ray.intersectObject(E3.mesh,false);
+
+  // Si el mesh cambió y ya no hay nada ahí, probar desde el otro lado
+  if(!hits.length){
+    E3.ray.set(pos.clone().addScaledVector(nor,-dist), nor.clone());
+    hits=E3.ray.intersectObject(E3.mesh,false);
+  }
+  E3.ray.far=Infinity;
+
+  if(!hits.length||!hits[0].uv)return null;
+  return {x:hits[0].uv.x, y:1-hits[0].uv.y};
 }
 
 // ── Panel de capas ──────────────────────────────────────────────────────────
@@ -1148,7 +1284,7 @@ function editarCapa(i){
   const n=prompt('Nombre de la capa:',l.name);
   if(n===null)return;
   if(n.trim())l.name=n.trim().slice(0,18);
-  const t=prompt('Tipo — escribe "cesped" o "brillo":',l.tipo);
+  const t=prompt('Tipo — escribe "cesped", "brillo" o "viento":',l.tipo);
   if(t&&TIPOS_CAPA[t.trim().toLowerCase()])l.tipo=t.trim().toLowerCase();
   renderGrassLayers();actualizarEtiquetaInt();
   S.dirty=true;updateSaveBtn();
@@ -1181,12 +1317,12 @@ function mascaraPNG(capa){
 
 function capasConContenido(){return P.capas.filter(l=>!l.vacia);}
 function nombreArchivoCapa(l){
-  const base=l.tipo==='brillo'?'rough':'grass';
+  const base=l.tipo==='brillo'?'rough':l.tipo==='viento'?'wind':'grass';
   return `${base}_${l.name.toLowerCase().replace(/\s+/g,'_').replace(/[^\w\-]/g,'')}.png`;
 }
 
 // JSON
-function showJSON(){const w=S.mapImg?S.mapImg.width:800,h=S.mapImg?S.mapImg.height:600;const grassLayers=capasConContenido().map((l,i)=>({name:l.name,tipo:l.tipo,index:i,maskFile:nombreArchivoCapa(l)}));const d={name:curLevelName()||'nivel_01',version:1,created:new Date().toISOString(),map:{width:w,height:h,realWidthCm:S.scaleCm||null,characterHeightCm:S.charCm||null},objects:S.objects.map(o=>{const e={id:o.type+'_'+o.id,type:o.type,label:OBJS[o.type].l,category:OBJS[o.type].cat||'core',rotation:o.rot||null,scale:o.scl!=null?o.scl:1,position:{world3D:o.p||null,normal:o.n||null,world:{x:Math.round(o.wx||0),y:Math.round(o.wy||0)},normalized:{x:+((o.wx||0)/w).toFixed(4),y:+((o.wy||0)/h).toFixed(4)}},note:o.note||''};if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:grassLayers};$('jsonOut').textContent=JSON.stringify(d,null,2);S._grassMasks=capasConContenido().map(l=>({name:nombreArchivoCapa(l),data:mascaraPNG(l)}));$('jsonOv').classList.remove('hide');}
+function showJSON(){const w=S.mapImg?S.mapImg.width:800,h=S.mapImg?S.mapImg.height:600;const grassLayers=capasConContenido().map((l,i)=>({name:l.name,tipo:l.tipo,index:i,maskFile:nombreArchivoCapa(l)}));const d={name:curLevelName()||'nivel_01',version:1,enviroPreset:S.enviro||'',created:new Date().toISOString(),map:{width:w,height:h,realWidthCm:S.scaleCm||null,characterHeightCm:S.charCm||null},objects:S.objects.map(o=>{const e={id:o.type+'_'+o.id,type:o.type,label:OBJS[o.type].l,category:OBJS[o.type].cat||'core',rotation:o.rot||null,scale:o.scl!=null?o.scl:1,position:{world3D:o.p||null,normal:o.n||null,world:{x:Math.round(o.wx||0),y:Math.round(o.wy||0)},normalized:{x:+((o.wx||0)/w).toFixed(4),y:+((o.wy||0)/h).toFixed(4)}},note:o.note||''};if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:grassLayers};$('jsonOut').textContent=JSON.stringify(d,null,2);S._grassMasks=capasConContenido().map(l=>({name:nombreArchivoCapa(l),data:mascaraPNG(l)}));$('jsonOv').classList.remove('hide');}
 $('jsonBtn').addEventListener('click',showJSON);
 $('undoBtn').addEventListener('click',doUndo);
 $('saveBtn').addEventListener('click',doSave);
@@ -1367,6 +1503,437 @@ function aplicarTransform3D(m,o,geo){
   if(geo&&geo.userData.baseY!=null)
     m.translateY(-geo.userData.baseY*k);
 }
+
+
+
+// ─── ALINEAR CON LA VERSIÓN ANTERIOR ────────────────────────────────────────
+// Registro de nubes de puntos (ICP con estimación de escala). Superpone la
+// malla nueva sobre la anterior para que lo pintado y los objetos sigan
+// cuadrando sin depender de escanear siempre igual.
+
+/// Rejilla espacial para buscar el punto más cercano sin comparar todos con todos
+function crearRejilla(pts,celda){
+  const g=new Map();
+  const k=(x,y,z)=>`${Math.floor(x/celda)},${Math.floor(y/celda)},${Math.floor(z/celda)}`;
+  for(let i=0;i<pts.length;i+=3){
+    const c=k(pts[i],pts[i+1],pts[i+2]);
+    let a=g.get(c); if(!a){a=[];g.set(c,a);}
+    a.push(i);
+  }
+  return {g,celda,pts,k};
+}
+
+function masCercano(rej,x,y,z){
+  const {g,celda,pts}=rej;
+  const cx=Math.floor(x/celda),cy=Math.floor(y/celda),cz=Math.floor(z/celda);
+  let mejor=-1,mejorD=Infinity;
+  // Anillos crecientes hasta encontrar algo, con tope para no colgarse
+  for(let r=0;r<=2;r++){
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      if(r>0&&Math.max(Math.abs(dx),Math.abs(dy),Math.abs(dz))!==r)continue;
+      const a=g.get(`${cx+dx},${cy+dy},${cz+dz}`);
+      if(!a)continue;
+      for(const i of a){
+        const ddx=pts[i]-x,ddy=pts[i+1]-y,ddz=pts[i+2]-z;
+        const d=ddx*ddx+ddy*ddy+ddz*ddz;
+        if(d<mejorD){mejorD=d;mejor=i;}
+      }
+    }
+    if(mejor>=0&&r>=1)break;
+  }
+  return mejor>=0?{i:mejor,d:Math.sqrt(mejorD)}:null;
+}
+
+/// Toma una muestra de vértices repartida por toda la malla
+function muestrearVertices(geo,cuantos){
+  const pos=geo.attributes.position;
+  const n=pos.count;
+  const paso=Math.max(1,Math.floor(n/cuantos));
+  const out=[];
+  for(let i=0;i<n;i+=paso){out.push(pos.getX(i),pos.getY(i),pos.getZ(i));}
+  return out;
+}
+
+function centroide(pts){
+  let x=0,y=0,z=0;const n=pts.length/3;
+  for(let i=0;i<pts.length;i+=3){x+=pts[i];y+=pts[i+1];z+=pts[i+2];}
+  return [x/n,y/n,z/n];
+}
+
+function escalaMedia(pts,c){
+  let s=0;const n=pts.length/3;
+  for(let i=0;i<pts.length;i+=3){
+    const dx=pts[i]-c[0],dy=pts[i+1]-c[1],dz=pts[i+2]-c[2];
+    s+=Math.sqrt(dx*dx+dy*dy+dz*dz);
+  }
+  return s/n;
+}
+
+/// Rotación óptima entre dos conjuntos emparejados.
+/// Método del cuaternión (Horn 1987): se construye una matriz simétrica 4x4 a
+/// partir de la covarianza y su mayor autovector ES el cuaternión de la
+/// rotación. Más estable que intentar una SVD a mano.
+function rotacionOptima(A,B,ca,cb){
+  let Sxx=0,Sxy=0,Sxz=0, Syx=0,Syy=0,Syz=0, Szx=0,Szy=0,Szz=0;
+  for(let i=0;i<A.length;i+=3){
+    const ax=A[i]-ca[0], ay=A[i+1]-ca[1], az=A[i+2]-ca[2];
+    const bx=B[i]-cb[0], by=B[i+1]-cb[1], bz=B[i+2]-cb[2];
+    Sxx+=ax*bx; Sxy+=ax*by; Sxz+=ax*bz;
+    Syx+=ay*bx; Syy+=ay*by; Syz+=ay*bz;
+    Szx+=az*bx; Szy+=az*by; Szz+=az*bz;
+  }
+
+  // Matriz N, simétrica 4x4
+  const N=[
+    [Sxx+Syy+Szz, Syz-Szy,      Szx-Sxz,      Sxy-Syx     ],
+    [Syz-Szy,     Sxx-Syy-Szz,  Sxy+Syx,      Szx+Sxz     ],
+    [Szx-Sxz,     Sxy+Syx,     -Sxx+Syy-Szz,  Syz+Szy     ],
+    [Sxy-Syx,     Szx+Sxz,      Syz+Szy,     -Sxx-Syy+Szz ]
+  ];
+
+  // Mayor autovector por iteración de potencia. Se desplaza la diagonal para
+  // garantizar que el dominante sea el de mayor autovalor y no el más negativo.
+  let traza=0;
+  for(let i=0;i<4;i++)traza+=Math.abs(N[i][i]);
+  const desp=traza+1;
+  for(let i=0;i<4;i++)N[i][i]+=desp;
+
+  let q=[1,0,0,0];
+  for(let it=0;it<128;it++){
+    const r=[0,0,0,0];
+    for(let i=0;i<4;i++)for(let j=0;j<4;j++)r[i]+=N[i][j]*q[j];
+    let n=Math.hypot(r[0],r[1],r[2],r[3]);
+    if(n<1e-12){q=[1,0,0,0];break;}
+    const nq=[r[0]/n,r[1]/n,r[2]/n,r[3]/n];
+    const dif=Math.abs(nq[0]-q[0])+Math.abs(nq[1]-q[1])+Math.abs(nq[2]-q[2])+Math.abs(nq[3]-q[3]);
+    q=nq;
+    if(dif<1e-12)break;
+  }
+
+  // Cuaternión (w,x,y,z) a matriz de rotación
+  const w=q[0],x=q[1],y=q[2],z=q[3];
+  const R=new THREE.Matrix3();
+  R.set(
+    1-2*(y*y+z*z),   2*(x*y-w*z),   2*(x*z+w*y),
+      2*(x*y+w*z), 1-2*(x*x+z*z),   2*(y*z-w*x),
+      2*(x*z-w*y),   2*(y*z+w*x), 1-2*(x*x+y*y)
+  );
+  return R;
+}
+
+/// Una pasada de ICP partiendo de una rotación inicial dada.
+/// Devuelve la transformación encontrada y el error medio.
+function icpDesde(origen,destino,rej,diag,yawInicial,iters){
+  const cd=centroide(destino), co=centroide(origen);
+  const sd=escalaMedia(destino,cd), so=escalaMedia(origen,co);
+
+  let escala=(so>1e-9)?sd/so:1;
+  let R=new THREE.Matrix3();
+  const cy=Math.cos(yawInicial), sy=Math.sin(yawInicial);
+  R.set(cy,0,sy, 0,1,0, -sy,0,cy);
+
+  const er0=R.elements;
+  let T=new THREE.Vector3(
+    cd[0]-escala*(er0[0]*co[0]+er0[3]*co[1]+er0[6]*co[2]),
+    cd[1]-escala*(er0[1]*co[0]+er0[4]*co[1]+er0[7]*co[2]),
+    cd[2]-escala*(er0[2]*co[0]+er0[5]*co[1]+er0[8]*co[2]));
+
+  const trab=new Float32Array(origen.length);
+  let err=Infinity;
+
+  for(let it=0;it<iters;it++){
+    const e=R.elements;
+    for(let i=0;i<origen.length;i+=3){
+      const x=origen[i]*escala,y=origen[i+1]*escala,z=origen[i+2]*escala;
+      trab[i]  =e[0]*x+e[3]*y+e[6]*z+T.x;
+      trab[i+1]=e[1]*x+e[4]*y+e[7]*z+T.y;
+      trab[i+2]=e[2]*x+e[5]*y+e[8]*z+T.z;
+    }
+
+    const pares=[];
+    for(let i=0;i<trab.length;i+=3){
+      const h=masCercano(rej,trab[i],trab[i+1],trab[i+2]);
+      if(h)pares.push({i,j:h.i,d:h.d});
+    }
+    if(pares.length<50)break;
+
+    // Descartar el 30% peor: son las zonas que has cambiado, y tiran del ajuste
+    pares.sort((a,b)=>a.d-b.d);
+    const buenos=pares.slice(0,Math.max(50,Math.floor(pares.length*0.7)));
+    err=buenos.reduce((s,p)=>s+p.d,0)/buenos.length;
+
+    const A=[],B=[];
+    for(const p of buenos){
+      A.push(origen[p.i],origen[p.i+1],origen[p.i+2]);
+      B.push(destino[p.j],destino[p.j+1],destino[p.j+2]);
+    }
+    const ca=centroide(A), cb=centroide(B);
+    const sa=escalaMedia(A,ca), sb=escalaMedia(B,cb);
+
+    R=rotacionOptima(A,B,ca,cb);
+    if(sa>1e-9)escala=sb/sa;
+    const er=R.elements;
+    T.set(
+      cb[0]-escala*(er[0]*ca[0]+er[3]*ca[1]+er[6]*ca[2]),
+      cb[1]-escala*(er[1]*ca[0]+er[4]*ca[1]+er[7]*ca[2]),
+      cb[2]-escala*(er[2]*ca[0]+er[5]*ca[1]+er[8]*ca[2]));
+
+    if(it>4&&err<diag*0.002)break;
+  }
+  return {R,T,escala,err};
+}
+
+/// Alinea la malla actual sobre la anterior.
+/// ICP converge a mínimos locales si la orientación inicial está lejos, así que
+/// se prueban varias y se refina la que mejor encaje.
+async function alinearConAnterior(){
+  if(!VER.anterior){toast('No hay versión anterior guardada');return;}
+  if(!MV.mesh){toast('Carga el modelo nuevo primero');return;}
+
+  toast('Alineando...');
+  await new Promise(r=>setTimeout(r,30));
+
+  const destino=muestrearVertices(VER.anterior.geo,4000);   // la anterior manda
+  const origen =muestrearVertices(MV.mesh.geometry,1200);
+  if(destino.length<300||origen.length<300){toast('Muy pocos vértices');return;}
+
+  const cd=centroide(destino);
+  const sd=escalaMedia(destino,cd);
+  const diag=Math.max(sd,1e-6)*3;
+  const rej=crearRejilla(destino,diag/12);
+
+  // Tanteo rápido en ocho orientaciones
+  let mejor=null;
+  for(let k=0;k<8;k++){
+    const r=icpDesde(origen,destino,rej,diag,k*Math.PI/4,7);
+    if(!mejor||r.err<mejor.err){mejor=r;mejor.yaw=k*Math.PI/4;}
+  }
+  // Refinar la ganadora
+  const fin=icpDesde(origen,destino,rej,diag,mejor.yaw,30);
+  const res=(fin.err<=mejor.err)?fin:mejor;
+
+  // Aplicar a la geometría, no al transform: los rayos de colocación y pintura
+  // trabajan sobre coordenadas de mundo y deben ver la malla ya corregida
+  const e=res.R.elements, s=res.escala, T=res.T;
+  const m=new THREE.Matrix4().set(
+    e[0]*s,e[3]*s,e[6]*s,T.x,
+    e[1]*s,e[4]*s,e[7]*s,T.y,
+    e[2]*s,e[5]*s,e[8]*s,T.z,
+    0,0,0,1);
+  MV.mesh.geometry.applyMatrix4(m);
+  MV.mesh.geometry.computeVertexNormals();
+  MV.mesh.geometry.computeBoundingBox();
+
+  if(E3.on){cargarMeshEn3D(true);refrescar3D();}
+  if(MV.wireOn)buildWireframe();
+
+  const pct=(res.err/diag*100).toFixed(1);
+  toast(`Alineado · escala ×${s.toFixed(3)} · desvío ${pct}%`);
+  return res.err;
+}
+
+
+// ─── AJUSTE DE COLOR DE LA TEXTURA ──────────────────────────────────────────
+// Los escaneos suelen venir claros, y con la exposición de HDRP encima acaban
+// quemados. Se corrige aquí y la textura sale ya ajustada hacia Unity.
+const CJ={exp:0,con:0,sat:0,tem:0,alt:0,baj:0,
+          original:null,canvas:null,tex:null,pend:null};
+
+function cjValores(){return {exp:CJ.exp,con:CJ.con,sat:CJ.sat,tem:CJ.tem,alt:CJ.alt,baj:CJ.baj};}
+function cjNeutro(){return !CJ.exp&&!CJ.con&&!CJ.sat&&!CJ.tem&&!CJ.alt&&!CJ.baj;}
+
+/// Guarda la imagen original de la textura para poder reajustar sin degradar
+function cjCapturarOriginal(){
+  const mat=MV.mesh&&MV.mesh.material;
+  const img=mat&&mat.map&&mat.map.image;
+  if(!img||!img.width)return false;
+  if(CJ.original&&CJ.original.width===img.width&&CJ.originalSrc===img)return true;
+  const cv=document.createElement('canvas');
+  cv.width=img.width;cv.height=img.height;
+  cv.getContext('2d').drawImage(img,0,0);
+  CJ.original=cv;
+  CJ.originalSrc=img;
+  return true;
+}
+
+/// Aplica la corrección píxel a píxel sobre el canvas de trabajo
+function cjProcesar(cvOrigen){
+  const w=cvOrigen.width,h=cvOrigen.height;
+  const out=document.createElement('canvas');
+  out.width=w;out.height=h;
+  const x=out.getContext('2d');
+  x.drawImage(cvOrigen,0,0);
+  if(cjNeutro())return out;
+
+  const d=x.getImageData(0,0,w,h);
+  const p=d.data;
+
+  const exp=Math.pow(2,CJ.exp/100*1.5);        // paradas de exposición
+  const con=1+CJ.con/100*0.8;
+  const sat=1+CJ.sat/100;
+  const tem=CJ.tem/100*28;                     // desplazamiento cálido/frío
+  const alt=CJ.alt/100;                        // luces
+  const baj=CJ.baj/100;                        // sombras
+
+  for(let i=0;i<p.length;i+=4){
+    let r=p[i],g=p[i+1],b=p[i+2];
+
+    // Exposición
+    r*=exp; g*=exp; b*=exp;
+
+    // Temperatura: más rojo y menos azul al calentar
+    r+=tem; b-=tem;
+
+    // Contraste alrededor del gris medio
+    r=(r-128)*con+128; g=(g-128)*con+128; b=(b-128)*con+128;
+
+    // Luces y sombras por separado, con peso según la luminancia
+    const lum=(r*0.299+g*0.587+b*0.114)/255;
+    if(alt){
+      const w2=lum*lum;             // afecta sobre todo a lo claro
+      const k=alt*60*w2;
+      r+=k; g+=k; b+=k;
+    }
+    if(baj){
+      const w2=(1-lum)*(1-lum);     // afecta sobre todo a lo oscuro
+      const k=baj*60*w2;
+      r+=k; g+=k; b+=k;
+    }
+
+    // Saturación respecto a la luminancia
+    if(sat!==1){
+      const l=r*0.299+g*0.587+b*0.114;
+      r=l+(r-l)*sat; g=l+(g-l)*sat; b=l+(b-l)*sat;
+    }
+
+    p[i]  =r<0?0:r>255?255:r;
+    p[i+1]=g<0?0:g>255?255:g;
+    p[i+2]=b<0?0:b>255?255:b;
+  }
+  x.putImageData(d,0,0);
+  return out;
+}
+
+/// Refresca la vista. Se retrasa un poco para no procesar en cada pixel movido.
+function cjAplicar(inmediato){
+  clearTimeout(CJ.pend);
+  const hacer=()=>{
+    if(!cjCapturarOriginal())return;
+    const mat=MV.mesh.material;
+    CJ.canvas=cjProcesar(CJ.original);
+    if(CJ.tex)CJ.tex.dispose();
+    CJ.tex=new THREE.CanvasTexture(CJ.canvas);
+    CJ.tex.flipY=mat.map?mat.map.flipY:false;
+    CJ.tex.wrapS=CJ.tex.wrapT=THREE.ClampToEdgeWrapping;
+    mat.map=CJ.tex;
+    mat.needsUpdate=true;
+    if(E3.on&&E3.mesh)E3.mesh.material=mat;
+    S.dirty=true;updateSaveBtn();
+  };
+  inmediato?hacer():CJ.pend=setTimeout(hacer,140);
+}
+
+
+/// Restaura los ajustes de color guardados con el nivel
+function cjCargar(v){
+  CJ.exp=v&&v.exp||0; CJ.con=v&&v.con||0; CJ.sat=v&&v.sat||0;
+  CJ.tem=v&&v.tem||0; CJ.alt=v&&v.alt||0; CJ.baj=v&&v.baj||0;
+  cjRefrescarUI();
+  if(MV.mesh&&!cjNeutro())cjAplicar(true);
+}
+
+function cjRefrescarUI(){
+  const m={exp:'cjExp',con:'cjCon',sat:'cjSat',tem:'cjTem',alt:'cjAlt',baj:'cjBaj'};
+  for(const k in m){
+    const el=$(m[k]);if(!el)continue;
+    el.value=CJ[k];
+    $(m[k]+'V').textContent=CJ[k]>0?'+'+CJ[k]:CJ[k];
+  }
+}
+
+[['cjExp','exp'],['cjCon','con'],['cjSat','sat'],['cjTem','tem'],['cjAlt','alt'],['cjBaj','baj']]
+ .forEach(([id,k])=>{
+  const el=$(id);if(!el)return;
+  el.addEventListener('input',e=>{
+    CJ[k]=+e.target.value;
+    $(id+'V').textContent=CJ[k]>0?'+'+CJ[k]:CJ[k];
+    cjAplicar();
+  });
+});
+
+$('cjReset')&&$('cjReset').addEventListener('click',()=>{
+  CJ.exp=CJ.con=CJ.sat=CJ.tem=CJ.alt=CJ.baj=0;
+  cjRefrescarUI();cjAplicar(true);
+  toast('Ajustes restablecidos');
+});
+
+/// Mide la imagen y propone una corrección: baja lo quemado y abre las sombras
+$('cjAuto')&&$('cjAuto').addEventListener('click',()=>{
+  if(!cjCapturarOriginal()){toast('El modelo no tiene textura');return;}
+  const cv=CJ.original;
+  const x=cv.getContext('2d');
+  // Muestreo reducido: no hace falta leer todos los píxeles
+  const paso=Math.max(1,Math.floor(cv.width/256));
+  const d=x.getImageData(0,0,cv.width,cv.height).data;
+  let suma=0,n=0,quemados=0;
+  for(let y=0;y<cv.height;y+=paso)for(let xx=0;xx<cv.width;xx+=paso){
+    const i=(y*cv.width+xx)*4;
+    const l=(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)/255;
+    suma+=l;n++;
+    if(l>0.92)quemados++;
+  }
+  const media=suma/n, pctQuemado=quemados/n;
+
+  // Llevar la media hacia 0.45, que es lo que HDRP espera de un albedo
+  const objetivo=0.45;
+  CJ.exp=Math.round(Math.max(-70,Math.min(40,Math.log2(objetivo/Math.max(media,0.02))/1.5*100)));
+  CJ.alt=pctQuemado>0.08?-Math.round(Math.min(60,pctQuemado*300)):0;
+  CJ.con=media>0.6?10:0;
+  cjRefrescarUI();cjAplicar(true);
+  toast(`Media ${(media*100).toFixed(0)}% · quemado ${(pctQuemado*100).toFixed(0)}% → ajustado`);
+});
+
+// ─── VERSIONES DEL MESH ─────────────────────────────────────────────────────
+// Al sustituir el modelo se guarda el anterior para poder superponerlo en
+// transparente mientras alineas el nuevo. Así el nivel sobrevive a los cambios.
+const VER={anterior:null,fantasma:null,visible:false};
+
+/// Se llama justo antes de reemplazar la malla
+function guardarVersionAnterior(){
+  if(!MV.mesh||!MV.mesh.geometry)return;
+  try{
+    VER.anterior={geo:MV.mesh.geometry.clone(),nombre:MV.meshName||'anterior',
+                  cuando:new Date().toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})};
+  }catch(e){}
+}
+
+function mostrarFantasma(on){
+  if(!E3.scene)return;
+  if(VER.fantasma){E3.scene.remove(VER.fantasma);VER.fantasma.material.dispose();VER.fantasma=null;}
+  VER.visible=!!on;
+  $('fantasmaBtn').classList.toggle('on',VER.visible);
+  if(!on)return;
+  if(!VER.anterior){toast('No hay versión anterior guardada');VER.visible=false;$('fantasmaBtn').classList.remove('on');return;}
+  const mat=new THREE.MeshBasicMaterial({
+    color:0x6a9eb8,transparent:true,opacity:.28,
+    depthWrite:false,side:THREE.DoubleSide,wireframe:false});
+  VER.fantasma=new THREE.Mesh(VER.anterior.geo,mat);
+  VER.fantasma.renderOrder=-1;
+  E3.scene.add(VER.fantasma);
+  toast('Versión anterior: '+VER.anterior.cuando);
+}
+
+$('alinearBtn')&&$('alinearBtn').addEventListener('click',async()=>{
+  if(!VER.anterior){toast('No hay versión anterior con la que alinear');return;}
+  if(!confirm('¿Alinear el modelo actual sobre la versión anterior?\n\nSe ajustará posición, rotación y escala.'))return;
+  await alinearConAnterior();
+  // Con la malla ya encajada, recuperar lo pintado y reposar los objetos
+  if(P.capas.some(l=>l.trazos&&l.trazos.length))reproyectarTrazos();
+});
+$('fantasmaBtn')&&$('fantasmaBtn').addEventListener('click',()=>{
+  if(!E3.on){toast('Disponible en la vista 3D');return;}
+  mostrarFantasma(!VER.visible);
+});
 
 // ─── EDITOR 3D ──────────────────────────────────────────────────────────────
 // Colocar objetos directamente sobre la malla escaneada: la posición sale de
@@ -1647,6 +2214,7 @@ function cargarMeshEn3D(forzar){
   if(E3.mesh){E3.scene.remove(E3.mesh);}
   E3.geoId=MV.mesh.geometry.uuid;
   quitarOverlay();P.overlay=null;
+  if(VER.fantasma){E3.scene.remove(VER.fantasma);VER.fantasma=null;VER.visible=false;}
   E3.mesh=new THREE.Mesh(MV.mesh.geometry, MV.mesh.material);
   E3.mesh.name='terreno';
   E3.scene.add(E3.mesh);
@@ -1657,6 +2225,8 @@ function cargarMeshEn3D(forzar){
   E3.target.copy(c);
   E3.dist=Math.max(t.x,t.y,t.z)*1.8||3;
   if(esModoPintura())asegurarOverlay();
+  // Malla nueva: reconstruir lo pintado a partir de los trazos guardados
+  if(P.capas.some(l=>l.trazos&&l.trazos.length))setTimeout(reproyectarTrazos,60);
   return true;
 }
 
@@ -2009,9 +2579,76 @@ function drawScaleRuler(){
 }
 
 
+
+
+// ─── REPOSAR OBJETOS SOBRE EL MODELO ────────────────────────────────────────
+// Tras cambiar el mesh, los objetos quedan flotando o enterrados. Esto los
+// vuelve a apoyar sobre la superficie conservando su posición horizontal.
+function reposarTodos(){
+  if(!E3.mesh){toast('Carga el modelo primero');return;}
+  const conPos=S.objects.filter(o=>o.p);
+  if(!conPos.length){toast('No hay objetos colocados');return;}
+  if(!confirm(`¿Reposar ${conPos.length} objeto(s) sobre la superficie actual?`))return;
+
+  pushUndo();
+  let ok=0,sin=0;
+  const ray=new THREE.Raycaster();
+
+  for(const o of conPos){
+    // Desde bien arriba, hacia abajo: es lo que hace Unity al cargar
+    const desde=new THREE.Vector3(o.p.x,o.p.y+3,o.p.z);
+    ray.set(desde,new THREE.Vector3(0,-1,0));
+    let hits=ray.intersectObject(E3.mesh,false);
+
+    // Si no hay nada debajo, probar desde abajo hacia arriba
+    if(!hits.length){
+      ray.set(new THREE.Vector3(o.p.x,o.p.y-3,o.p.z),new THREE.Vector3(0,1,0));
+      hits=ray.intersectObject(E3.mesh,false);
+    }
+    if(!hits.length){sin++;continue;}
+
+    const h=hits[0];
+    o.p={x:+h.point.x.toFixed(4),y:+h.point.y.toFixed(4),z:+h.point.z.toFixed(4)};
+    if(h.face){
+      const n=h.face.normal.clone().transformDirection(h.object.matrixWorld);
+      o.n={x:+n.x.toFixed(3),y:+n.y.toFixed(3),z:+n.z.toFixed(3)};
+    }
+    ok++;
+  }
+
+  refrescar3D();render();
+  S.dirty=true;updateSaveBtn();
+  toast(sin?`${ok} reposados · ${sin} sin superficie debajo`:`${ok} objetos reposados`);
+}
+$('reposarBtn').addEventListener('click',reposarTodos);
+
+// ─── CLIMA (presets de Enviro) ──────────────────────────────────────────────
+function pintarClima(){
+  const el=$('climaList');
+  const lista=CAT.enviro||[];
+  if(!lista.length){
+    el.innerHTML='<div class="empty">Sin presets.<br>Publica el catálogo desde Unity.</div>';
+    return;
+  }
+  const opciones=['',...lista];
+  el.innerHTML=opciones.map(p=>`
+    <div class="li ${(S.enviro||'')===p?'on':''}" data-p="${esc(p)}">
+      <span class="li-ic"><svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9h-1.3A7 7 0 1 0 4 16.5"/></svg></span>
+      <div class="li-info"><div class="li-t">${p?esc(p):'Sin especificar'}</div></div>
+    </div>`).join('');
+  el.querySelectorAll('.li').forEach(d=>d.addEventListener('click',()=>{
+    S.enviro=d.dataset.p||'';
+    S.dirty=true;updateSaveBtn();
+    pintarClima();
+    toast(S.enviro?('Clima: '+S.enviro):'Clima sin especificar');
+  }));
+}
+$('climaBtn').addEventListener('click',()=>{pintarClima();$('climaOv').classList.remove('hide');});
+$('climaX').addEventListener('click',()=>$('climaOv').classList.add('hide'));
+
 // ─── CATÁLOGO DE OBJETOS ────────────────────────────────────────────────────
 // La paleta la define Unity: son los prefabs que existen de verdad.
-const CAT={items:[],cargado:false,filtro:'',cat:'todos'};
+const CAT={items:[],enviro:[],cargado:false,filtro:'',cat:'todos'};
 
 function usos(){try{return JSON.parse(localStorage.getItem('usos')||'{}');}catch(e){return {};}}
 function sumarUso(t){const u=usos();u[t]=(u[t]||0)+1;localStorage.setItem('usos',JSON.stringify(u));}
@@ -2025,6 +2662,7 @@ async function cargarCatalogo(){
     if(!r.ok)return;
     const d=await r.json();
     CAT.items=(d.items||[]).filter(i=>i&&i.type);
+    CAT.enviro=d.enviro||[];
     CAT.cargado=true;
     // Registrar cada objeto del catálogo como tipo colocable
     CAT.items.forEach((it,i)=>{
@@ -2229,7 +2867,7 @@ async function pushLevelToUnity(silencioso){
   if(!S.ip){toast('Conecta al PC en Ajustes primero');return;}
   const name=curLevelName()||'nivel_01';
   const w=S.mapImg?S.mapImg.width:800,h=S.mapImg?S.mapImg.height:600;
-  const levelJson=JSON.stringify({name,version:1,created:new Date().toISOString(),map:{width:w,height:h,realWidthCm:S.scaleCm||null,characterHeightCm:S.charCm||null},objects:S.objects.map(o=>{const e={id:o.type+'_'+o.id,type:o.type,label:OBJS[o.type].l,category:OBJS[o.type].cat||'core',rotation:o.rot||null,scale:o.scl!=null?o.scl:1,position:{world3D:o.p||null,normal:o.n||null,normalized:{x:+((o.wx||0)/w).toFixed(4),y:+((o.wy||0)/h).toFixed(4)}},note:o.note||''};if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:capasConContenido().map(l=>({name:l.name,tipo:l.tipo,maskFile:nombreArchivoCapa(l)}))});
+  const levelJson=JSON.stringify({name,version:1,enviroPreset:S.enviro||'',created:new Date().toISOString(),map:{width:w,height:h,realWidthCm:S.scaleCm||null,characterHeightCm:S.charCm||null},objects:S.objects.map(o=>{const e={id:o.type+'_'+o.id,type:o.type,label:OBJS[o.type].l,category:OBJS[o.type].cat||'core',rotation:o.rot||null,scale:o.scl!=null?o.scl:1,position:{world3D:o.p||null,normal:o.n||null,normalized:{x:+((o.wx||0)/w).toFixed(4),y:+((o.wy||0)/h).toFixed(4)}},note:o.note||''};if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:capasConContenido().map(l=>({name:l.name,tipo:l.tipo,maskFile:nombreArchivoCapa(l)}))});
   const fd=new FormData();fd.append('name',name);fd.append('levelJson',levelJson);
   for(const l of capasConContenido()){
     const fname=nombreArchivoCapa(l);
@@ -2292,13 +2930,13 @@ async function doSave(){if(!S.db||!S.levelId){toast('Conecta Firebase para guard
 // LEVELS
 let levels=[];
 function curLevelName(){return $('levelSelName').textContent;}
-function snapshotLevel(){return{name:curLevelName(),objects:S.objects.map(o=>{const e={type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:P.capas.map(l=>({name:l.name,tipo:l.tipo,color:l.color,vis:l.vis,vacia:l.vacia,img:l.vacia?null:l.cv.toDataURL('image/png')})),scaleCm:S.scaleCm||0,charCm:S.charCm||0,escalaObj:S.escalaObj||1,nextId:S.nextId,updatedAt:Date.now()};}
+function snapshotLevel(){return{name:curLevelName(),objects:S.objects.map(o=>{const e={type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;}),grass:P.capas.map(l=>({name:l.name,tipo:l.tipo,color:l.color,vis:l.vis,vacia:l.vacia,trazos:l.trazos||[]})),scaleCm:S.scaleCm||0,charCm:S.charCm||0,escalaObj:S.escalaObj||1,enviro:S.enviro||'',color:cjValores(),nextId:S.nextId,updatedAt:Date.now()};}
 function loadLevels(){if(!S.db)return;if(S.lvlUnsub)S.lvlUnsub();S.lvlUnsub=S.db.collection('levels').orderBy('updatedAt','desc').onSnapshot(s=>{levels=s.docs.map(d=>({id:d.id,...d.data()}));renderLevels();if(!S.levelId&&levels.length)openLevel(levels[0].id);else if(!S.levelId)newLevel();});}
 function renderLevels(){const el=$('lvlList');if(!levels.length){el.innerHTML='<div class="empty">Sin niveles — crea uno nuevo</div>';return;}el.innerHTML=levels.map(l=>{const n=(l.objects||[]).length;return `<div class="li ${l.id===S.levelId?'on':''}" data-id="${l.id}"><span class="li-ic"><svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg></span><div class="li-info"><div class="li-t">${esc(l.name||'Sin nombre')}</div><div class="li-s">${n} objeto${n!==1?'s':''}</div></div><button class="li-x" data-del="${l.id}">×</button></div>`;}).join('');el.querySelectorAll('.li').forEach(i=>i.addEventListener('click',e=>{if(e.target.dataset.del)return;openLevel(i.dataset.id);$('lvlOv').classList.add('hide');}));el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();delLevel(b.dataset.del);}));}
 async function newLevel(){const name='nivel_'+String(levels.length+1).padStart(2,'0');if(S.db){const r=await S.db.collection('levels').add({name,objects:[],nextId:1,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});openLevel(r.id);}else{const id='llocal_'+Date.now();levels.unshift({id,name,objects:[],nextId:1});openLevel(id);}$('lvlOv').classList.add('hide');}
 async function delLevel(id){if(!confirm('¿Eliminar este nivel?'))return;if(S.db){try{await S.db.collection('levels').doc(id).delete();}catch(e){}}else{levels=levels.filter(l=>l.id!==id);renderLevels();}if(S.levelId===id){S.levelId=null;if(levels.length)openLevel(levels[0].id);else newLevel();}}
 function openLevel(id){const l=levels.find(x=>x.id===id);if(!l)return;S.levelId=id;(l.objects||[]).forEach(o=>{if(!OBJS[o.type])OBJS[o.type]={ab:'?',l:o.type.replace(/^c_/,''),u:0,c:'#7a6a55',phys:{dyn:0,col:'mesh_convex'},custom:1};});
-  S.objects=(l.objects||[]).map((o,i)=>{const e={id:i+1,type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;});cargarCapas(l.grass);S.nextId=(l.nextId)||S.objects.length+1;S.scaleCm=l.scaleCm||0;S.charCm=l.charCm||0;S.escalaObj=l.escalaObj||1;S.sel=null;S.undo=[];S.dirty=false;updateSaveBtn();$('levelSelName').textContent=l.name||'nivel';S.mapImg=null;$('drop').classList.remove('hide');selPanel();fit();render();if(E3.on)refrescar3D();renderLevels();}
+  S.objects=(l.objects||[]).map((o,i)=>{const e={id:i+1,type:o.type,wx:o.wx,wy:o.wy,note:o.note||''};if(o.p)e.p=o.p;if(o.n)e.n=o.n;if(o.rot)e.rot=o.rot;if(o.scl!=null)e.scl=o.scl;if(o.light)e.light=o.light;if(o.phys)e.phys=o.phys;if(o.portal)e.portal=o.portal;return e;});cargarCapas(l.grass);S.nextId=(l.nextId)||S.objects.length+1;S.scaleCm=l.scaleCm||0;S.charCm=l.charCm||0;S.escalaObj=l.escalaObj||1;S.enviro=l.enviro||'';cjCargar(l.color);S.sel=null;S.undo=[];S.dirty=false;updateSaveBtn();$('levelSelName').textContent=l.name||'nivel';S.mapImg=null;$('drop').classList.remove('hide');selPanel();fit();render();if(E3.on)refrescar3D();renderLevels();}
 $('levelSel').addEventListener('click',()=>{renderLevels();$('lvlOv').classList.remove('hide');});
 $('lvlX').addEventListener('click',()=>$('lvlOv').classList.add('hide'));
 $('lvlNew').addEventListener('click',newLevel);
@@ -2457,6 +3095,8 @@ function resizeMeshViewer(){if(!MV.renderer)return;const s=$('meshStage');MV.cam
 // Load a mesh from a GLB/OBJ ArrayBuffer or URL (simplified: accepts a THREE.BufferGeometry)
 function loadMeshGeometry(geo,mat){
   initMeshViewer();
+  if(MV.mesh)guardarVersionAnterior();
+  CJ.original=null;CJ.originalSrc=null;
   if(MV.mesh){MV.scene.remove(MV.mesh);if(MV.wire){MV.wire=null;}MV.wireOn=false;$('wfBtn').classList.remove('on');}
   MV.origGeo=geo.clone();
   if(!geo.attributes.normal)geo.computeVertexNormals();
@@ -2470,6 +3110,8 @@ function loadMeshGeometry(geo,mat){
   const ss=$('scaleSlider');if(ss){ss.value=100;$('scaleVal').textContent='1.0×';}
   $('meshEmpty').style.display='none';$('meshTools').style.display='block';
   pistaGestos();
+  // Reaplicar los ajustes de color guardados sobre la textura nueva
+  if(!cjNeutro())setTimeout(()=>cjAplicar(true),120);
   if(typeof sincronizar3D==='function'&&E3.on){cargarMeshEn3D(true);refrescar3D();}
   updateMeshInfo();
 }
@@ -2728,7 +3370,7 @@ function updateMeshInfo(){if(!MV.mesh)return;const tri=MV.mesh.geometry.index?MV
 // Demo: load a placeholder mesh so the viewer is testable before PC integration
 
 // Mesh tool tabs
-document.querySelectorAll('.mtab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.mtab').forEach(x=>x.classList.remove('on'));t.classList.add('on');const m=t.dataset.mt;$('mCrop').style.display=m==='crop'?'block':'none';$('mTransform').style.display=m==='transform'?'block':'none';$('mDecimate').style.display=m==='decimate'?'block':'none';}));
+document.querySelectorAll('.mtab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.mtab').forEach(x=>x.classList.remove('on'));t.classList.add('on');const m=t.dataset.mt;$('mCrop').style.display=m==='crop'?'block':'none';$('mTransform').style.display=m==='transform'?'block':'none';$('mDecimate').style.display=m==='decimate'?'block':'none';$('mColor').style.display=m==='color'?'block':'none';}));
 // Crop
 $('cropSlider')&&$('cropSlider').addEventListener('input',e=>{$('cropVal').textContent=e.target.value+'%';if(MV.mesh){MV.crop=+e.target.value/100;applyCrop();}});
 function applyCrop(){if(!MV.origGeo||!MV.mesh)return;const g=MV.origGeo.clone();g.computeBoundingBox();const minY=g.boundingBox.min.y,h=g.boundingBox.max.y-minY,cut=minY+h*MV.crop;const pos=g.attributes.position,keep=[];const idx=g.index?g.index.array:null;function vy(i){return pos.getY(i);}
@@ -2785,7 +3427,25 @@ $('meshApprove')&&$('meshApprove').addEventListener('click',async()=>{
   try{
     const fd=new FormData();
     fd.append('name',nombre);
-    MV.archivos.forEach((f,i)=>fd.append('f'+i,f,f.name));
+
+    // Si hay ajuste de color, se sustituye la imagen por la corregida: así
+    // Unity recibe la textura con el rango bueno y no hay que tocar exposición
+    let texAjustada=null;
+    if(!cjNeutro()&&CJ.canvas){
+      texAjustada=await new Promise(res=>CJ.canvas.toBlob(res,'image/jpeg',0.95));
+    }
+    let sustituida=false;
+    for(let i=0;i<MV.archivos.length;i++){
+      const f=MV.archivos[i];
+      const esImagen=/\.(jpe?g|png)$/i.test(f.name);
+      if(texAjustada&&esImagen&&!sustituida){
+        fd.append('f'+i,texAjustada,f.name.replace(/\.png$/i,'.jpg'));
+        sustituida=true;
+      }else{
+        fd.append('f'+i,f,f.name);
+      }
+    }
+    if(texAjustada&&!sustituida)fd.append('tex',texAjustada,nombre+'.jpg');
     const r=await fetch(`${srvURL()}/push-mesh`,{method:'POST',body:fd,signal:AbortSignal.timeout(180000)});
     if(r.ok){
       const d=await r.json();
