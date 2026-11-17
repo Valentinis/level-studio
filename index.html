@@ -863,7 +863,8 @@ function srvURL(){
   if(/^https?:\/\//i.test(v))return v.replace(/\/+$/,'');
   return 'http://'+v.replace(/\/+$/,'')+':7845';
 }
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+let _toastT=0;
+function toast(m,ms=2200){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(_toastT);_toastT=setTimeout(()=>t.classList.remove('show'),ms);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 // TABS
@@ -3419,9 +3420,44 @@ async function cargarArchivos(files){
   }
 }
 
+// Las texturas de RealityScan vienen a 8K (y a veces varias): decodificadas ocupan cientos de MB
+// cada una y Safari en el iPhone cierra la pestaña (la página "se resetea"). Se reducen a
+// MAX_TEX px antes de usarlas, una a una, para que solo haya una grande en memoria a la vez.
+const MAX_TEX=2048;
+async function reducirImagen(file){
+  let bmp=null;
+  try{
+    bmp=await createImageBitmap(file);
+    const lado=Math.max(bmp.width,bmp.height);
+    if(lado<=MAX_TEX){bmp.close();return file;}
+    const k=MAX_TEX/lado;
+    const c=document.createElement('canvas');
+    c.width=Math.max(1,Math.round(bmp.width*k));
+    c.height=Math.max(1,Math.round(bmp.height*k));
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    bmp.close();bmp=null;
+    const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));
+    c.width=c.height=0;   // suelta el lienzo ya
+    return blob?new File([blob],file.name,{type:'image/jpeg'}):file;
+  }catch(e){
+    if(bmp)bmp.close();
+    console.warn('No se pudo reducir '+file.name,e);
+    return file;
+  }
+}
+
+// Más que esto de .obj (texto) el iPhone no lo aguanta al convertirlo en malla
+const MAX_OBJ_MB_MOVIL=90;
+const esMovil=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+
 async function cargarOBJ(objFile,todos){
   if(!THREE.OBJLoader){toast('OBJLoader no disponible — revisa la conexión');return;}
-  const texto=await leer(objFile,'text');
+  const mb=objFile.size/1048576;
+  if(esMovil&&mb>MAX_OBJ_MB_MOVIL){
+    toast(`El OBJ pesa ${Math.round(mb)} MB: demasiado para el móvil. En RealityScan simplifica la malla (Simplify, ~300.000 triángulos) y vuelve a exportar`,8000);
+    return;
+  }
+  let texto=await leer(objFile,'text');
 
   // Materiales y texturas que vengan junto al .obj
   let materiales=null;
@@ -3431,7 +3467,10 @@ async function cargarOBJ(objFile,todos){
     try{
       const mtlTexto=await leer(mtlFile,'text');
       const urls={};
-      for(const im of imgs)urls[im.name]=URL.createObjectURL(im);
+      for(let i=0;i<imgs.length;i++){
+        toast(`Preparando textura ${i+1}/${imgs.length}...`);
+        urls[imgs[i].name]=URL.createObjectURL(await reducirImagen(imgs[i]));
+      }
       const ml=new THREE.MTLLoader();
       // Redirigir las rutas de textura a los archivos que el usuario ha elegido
       ml.setResourcePath('');
@@ -3449,6 +3488,7 @@ async function cargarOBJ(objFile,todos){
   const loader=new THREE.OBJLoader();
   if(materiales)loader.setMaterials(materiales);
   const grupo=loader.parse(texto);
+  texto=null;   // el texto del .obj ya no hace falta (puede ser de 100 MB)
   usarObjeto3D(grupo,objFile.name,!!(mtlFile&&imgs.length));
 }
 
@@ -3467,6 +3507,7 @@ function usarObjeto3D(raiz,nombre,conTextura){
     if(o.isMesh&&o.geometry&&o.geometry.attributes.position){
       const g=o.geometry.clone();
       g.applyMatrix4(o.matrixWorld);
+      o.geometry.dispose();   // la original sobra: no tener la malla dos veces en memoria
       partes.push({g,mat:o.material});
     }
   });
